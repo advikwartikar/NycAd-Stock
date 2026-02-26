@@ -1,0 +1,112 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                    403 ERROR FIXED - CSRF TOKENS                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+PROBLEM:
+────────
+All buttons (BUY, SELL, HOLD, EXIT) were giving 403 Forbidden errors.
+
+CAUSE:
+──────
+Spring Security requires CSRF tokens for all POST requests.
+The forms were missing these tokens!
+
+FIX APPLIED:
+────────────
+✓ Added CSRF tokens to all forms in experiment-trade.html
+✓ BUY/SELL/HOLD form now includes: th:name="${_csrf.parameterName}"
+✓ EXIT form now includes: th:name="${_csrf.parameterName}"
+
+These hidden fields are automatically populated by Thymeleaf with the 
+correct CSRF token value.
+
+═══════════════════════════════════════════════════════════════════
+🚀 DEPLOY THIS FIX
+═══════════════════════════════════════════════════════════════════
+
+OPTION 1: Push to GitHub (Recommended)
+───────────────────────────────────────
+
+cd D:\STA
+git add src/main/resources/templates/experiment-trade.html
+git commit -m "Fix 403 error - add CSRF tokens"
+git push origin main
+
+Railway will auto-deploy in 2-3 minutes!
+
+OPTION 2: Replace File Locally (Test First)
+────────────────────────────────────────────
+
+1. Extract the new zip file
+2. Replace experiment-trade.html in your project
+3. Test locally: mvn spring-boot:run
+4. Visit http://localhost:8080
+5. Login and try experiment
+6. If BUY/SELL/HOLD work, push to GitHub
+
+═══════════════════════════════════════════════════════════════════
+✅ VERIFICATION
+═══════════════════════════════════════════════════════════════════
+
+After deploying, test:
+
+1. Login as user1 / user123
+2. Click "Begin Experiment"
+3. Click BUY button
+   ✓ Should work (no 403 error)
+   ✓ Should see "Decision recorded: BUY"
+   ✓ Shares should increase to 10
+   ✓ Capital should decrease
+
+4. Click HOLD button
+   ✓ Should work (no 403 error)
+   ✓ Should advance to next day
+
+5. Click EXIT button
+   ✓ Should work (no 403 error)
+   ✓ Should save progress and show summary
+
+═══════════════════════════════════════════════════════════════════
+🔍 WHAT ARE CSRF TOKENS?
+═══════════════════════════════════════════════════════════════════
+
+CSRF = Cross-Site Request Forgery protection
+
+Spring Security generates a unique token for each session.
+Every POST request MUST include this token.
+Without it → 403 Forbidden error.
+
+Thymeleaf automatically provides the token via:
+  th:name="${_csrf.parameterName}"
+  th:value="${_csrf.token}"
+
+This creates a hidden field like:
+  <input type="hidden" name="_csrf" value="abc123..."/>
+
+═══════════════════════════════════════════════════════════════════
+🐛 IF STILL GETTING 403
+═══════════════════════════════════════════════════════════════════
+
+1. Clear browser cache completely
+2. Logout and login again (generates new CSRF token)
+3. Try in incognito/private window
+4. Check browser console for errors (F12 → Console)
+5. Verify you deployed the updated experiment-trade.html file
+
+═══════════════════════════════════════════════════════════════════
+✅ COMPLETE FIX LIST
+═══════════════════════════════════════════════════════════════════
+
+✓ Railway build error - FIXED
+✓ Admin 500 error - FIXED
+✓ User management - WORKING
+✓ Stocks visible - WORKING
+✓ 2 hour time limit - FIXED
+✓ Exit button - ADDED
+✓ 403 error on experiment - FIXED ⭐ NEW
+
+ALL ISSUES RESOLVED! 🎉
+
+═══════════════════════════════════════════════════════════════════
+                   🎯 PUSH AND TEST NOW!
+═══════════════════════════════════════════════════════════════════

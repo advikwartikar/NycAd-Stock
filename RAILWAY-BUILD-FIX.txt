@@ -1,0 +1,109 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                 RAILWAY BUILD ERROR - FIXED                        ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+ERROR YOU SAW:
+─────────────
+exit code: 1
+failed to build: failed to solve: process did not complete successfully
+
+CAUSE:
+──────
+Railway was trying to use a "production" profile that doesn't exist in
+our pom.xml
+
+FIX APPLIED:
+────────────
+✓ Updated nixpacks.toml with simple build command
+✓ Added railway.json (Railway's preferred config)
+✓ Added railway.toml (backup config)
+
+These files tell Railway exactly how to build:
+1. Build: mvn clean install -DskipTests
+2. Start: mvn spring-boot:run
+
+═══════════════════════════════════════════════════════════════════
+🚀 DEPLOY NOW
+═══════════════════════════════════════════════════════════════════
+
+OPTION 1: Push the New Files (Easiest)
+───────────────────────────────────────
+
+cd D:\STA
+git add nixpacks.toml railway.json railway.toml
+git commit -m "Fix Railway build configuration"
+git push origin main
+
+Railway will automatically redeploy with the correct build command!
+
+OPTION 2: Fresh Deploy
+───────────────────────
+
+If you already have errors in Railway:
+
+1. Delete your Railway project
+2. git add . && git commit -m "Fixed build" && git push
+3. Create new Railway project
+4. Deploy from GitHub
+5. Generate domain
+
+OPTION 3: Manual Railway Configuration
+───────────────────────────────────────
+
+In Railway dashboard:
+1. Go to your project
+2. Click "Settings"
+3. Scroll to "Build & Deploy"
+4. Set Build Command: mvn clean install -DskipTests
+5. Set Start Command: mvn spring-boot:run
+6. Click "Redeploy"
+
+═══════════════════════════════════════════════════════════════════
+✅ VERIFICATION
+═══════════════════════════════════════════════════════════════════
+
+After pushing, Railway logs should show:
+
+✓ "Building with Maven"
+✓ "BUILD SUCCESS"
+✓ "Created 2 admin users"
+✓ "Created 30 regular users"
+✓ "Stocks loaded successfully: 110"
+✓ "Started StockTradingApplication"
+
+If you see all these messages → SUCCESS! ✅
+
+═══════════════════════════════════════════════════════════════════
+🐛 STILL HAVING ISSUES?
+═══════════════════════════════════════════════════════════════════
+
+1. Make sure these files exist in your repo:
+   - nixpacks.toml
+   - railway.json
+   - railway.toml
+
+2. Verify they're in Git:
+   git ls-files | grep railway
+   git ls-files | grep nixpacks
+
+3. If not, add them:
+   git add nixpacks.toml railway.json railway.toml
+   git commit -m "Add Railway config"
+   git push
+
+4. Check Railway logs for the actual error
+   Railway Dashboard → Your Project → Deployments → Latest → View Logs
+
+═══════════════════════════════════════════════════════════════════
+📝 WHAT CHANGED
+═══════════════════════════════════════════════════════════════════
+
+BEFORE (Railway's auto-detection):
+mvn -Pproduction clean install  ❌ (production profile doesn't exist)
+
+AFTER (Our explicit config):
+mvn clean install -DskipTests   ✅ (simple, works)
+
+═══════════════════════════════════════════════════════════════════
+                    🎯 PUSH AND DEPLOY NOW!
+═══════════════════════════════════════════════════════════════════

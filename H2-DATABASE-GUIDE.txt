@@ -1,0 +1,277 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║              H2 DATABASE - COMPLETE GUIDE                          ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+DATABASE TYPE: H2 File-Based (Persistent)
+CONFIGURATION: Already set up and ready to use!
+
+═══════════════════════════════════════════════════════════════════
+📁 DATABASE FILE LOCATION
+═══════════════════════════════════════════════════════════════════
+
+After first run, you'll find:
+  Windows: D:\NycAd Stock App\data\stockdb.mv.db
+  Mac/Linux: ./data/stockdb.mv.db
+
+This file contains ALL your data:
+✓ All user accounts
+✓ All experiment sessions
+✓ All trading decisions
+✓ Everything!
+
+═══════════════════════════════════════════════════════════════════
+🚀 FIRST TIME SETUP
+═══════════════════════════════════════════════════════════════════
+
+1. Extract the project
+2. Open terminal/command prompt
+3. Navigate to project folder:
+   cd "D:\NycAd Stock App"
+
+4. Run the application:
+   mvn spring-boot:run
+
+5. Wait for these messages:
+   ✓ Created admin user: admin1
+   ✓ Created 6 real users
+   ✓ Stocks loaded successfully: 110
+   ✓ Started StockTradingApplication
+
+6. Check that data folder was created:
+   Windows: dir data
+   Mac/Linux: ls -la data
+
+   You should see: stockdb.mv.db
+
+7. Application ready at: http://localhost:8080
+
+═══════════════════════════════════════════════════════════════════
+✅ DATA PERSISTENCE - HOW IT WORKS
+═══════════════════════════════════════════════════════════════════
+
+Every action is saved immediately:
+✓ User logs in → Saved to database
+✓ User starts experiment → Saved to database
+✓ User makes trade decision → Saved to database
+✓ User completes experiment → Saved to database
+✓ Admin adds new user → Saved to database
+
+When you restart the application:
+✓ All users still exist
+✓ All experiments preserved
+✓ All data intact
+✓ Nothing lost!
+
+═══════════════════════════════════════════════════════════════════
+💾 BACKING UP YOUR DATA
+═══════════════════════════════════════════════════════════════════
+
+WEEKLY BACKUP (Recommended):
+───────────────────────────
+
+1. Stop the application (Ctrl+C in terminal)
+
+2. Copy the database file:
+   Windows:
+     copy "D:\NycAd Stock App\data\stockdb.mv.db" "D:\Backups\stockdb_2026-02-23.mv.db"
+   
+   Mac/Linux:
+     cp ./data/stockdb.mv.db ./backups/stockdb_2026-02-23.mv.db
+
+3. Restart the application:
+   mvn spring-boot:run
+
+BACKUP SCHEDULE:
+─────────────────
+Week 1: Sunday, March 2, 2026
+Week 2: Sunday, March 9, 2026
+Week 3: Sunday, March 16, 2026
+Week 4: Sunday, March 23, 2026
+... continue weekly
+
+Keep last 4 backups (1 month history)
+
+═══════════════════════════════════════════════════════════════════
+🔄 RESTORING FROM BACKUP
+═══════════════════════════════════════════════════════════════════
+
+If something goes wrong:
+
+1. Stop the application
+
+2. Replace current database with backup:
+   Windows:
+     copy "D:\Backups\stockdb_2026-02-23.mv.db" "D:\NycAd Stock App\data\stockdb.mv.db"
+   
+   Mac/Linux:
+     cp ./backups/stockdb_2026-02-23.mv.db ./data/stockdb.mv.db
+
+3. Restart application:
+   mvn spring-boot:run
+
+4. All data restored to backup date!
+
+═══════════════════════════════════════════════════════════════════
+🔍 VIEWING YOUR DATA
+═══════════════════════════════════════════════════════════════════
+
+METHOD 1: Admin Panel (Easy - Recommended)
+───────────────────────────────────────────
+1. Login as admin1 / admin123
+2. View all users and experiments
+3. Export data to CSV
+4. User-friendly interface
+
+METHOD 2: H2 Console (Advanced - Direct Database Access)
+─────────────────────────────────────────────────────────
+1. Start application
+2. Open browser: http://localhost:8080/h2-console
+3. Connection Settings:
+   - JDBC URL: jdbc:h2:file:./data/stockdb
+   - Username: sa
+   - Password: (leave blank)
+4. Click "Connect"
+5. Run SQL queries directly
+
+Useful SQL Queries:
+───────────────────
+-- View all users
+SELECT * FROM users;
+
+-- Count completed experiments
+SELECT COUNT(*) FROM experiment_sessions WHERE completed = true;
+
+-- View recent experiments
+SELECT u.username, es.start_time, es.current_capital 
+FROM experiment_sessions es 
+JOIN users u ON es.user_id = u.id 
+ORDER BY es.start_time DESC 
+LIMIT 10;
+
+-- Total profit/loss across all users
+SELECT SUM(current_capital - 100000) as total_profit 
+FROM experiment_sessions 
+WHERE completed = true;
+
+═══════════════════════════════════════════════════════════════════
+📊 EXPECTED DATABASE SIZE
+═══════════════════════════════════════════════════════════════════
+
+Duration    Users    Experiments    Database Size
+─────────────────────────────────────────────────
+Week 1      6        3-6            ~5 MB
+Month 1     10       20-30          ~20 MB
+Month 2     20       50-80          ~40 MB
+Month 3     30       100-150        ~60 MB
+
+After 3 months with 30 users: ~60-100 MB
+This is tiny! No space concerns.
+
+═══════════════════════════════════════════════════════════════════
+🔧 MAINTENANCE TASKS
+═══════════════════════════════════════════════════════════════════
+
+DAILY:
+✓ Check application is running
+✓ Monitor for errors in console
+
+WEEKLY:
+✓ Backup database file
+✓ Check disk space (should be fine)
+✓ Review new user signups in admin panel
+
+MONTHLY:
+✓ Export all data via admin panel
+✓ Archive old backups
+✓ Review inactive users
+
+END OF 3 MONTHS:
+✓ Final data export
+✓ Create permanent backup
+✓ Analyze all results
+
+═══════════════════════════════════════════════════════════════════
+❓ TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════
+
+PROBLEM: Data disappeared after restart
+SOLUTION: 
+  - Check ./data/ folder exists
+  - Check stockdb.mv.db file is present
+  - Make sure you're running from correct directory
+
+PROBLEM: "Database is already in use" error
+SOLUTION:
+  - Only run one instance of the application
+  - Check if app is already running
+  - Close all terminals running the app
+
+PROBLEM: Can't find database file
+SOLUTION:
+  - Run: mvn spring-boot:run
+  - Data folder is created in current directory
+  - Make sure you're in project root folder
+
+PROBLEM: How do I know data is being saved?
+SOLUTION:
+  1. Create a test user (admin panel → add user)
+  2. Stop application (Ctrl+C)
+  3. Restart: mvn spring-boot:run
+  4. Login with test user
+  5. If it works → data is persisting! ✅
+
+═══════════════════════════════════════════════════════════════════
+🎯 3-MONTH PROJECT CHECKLIST
+═══════════════════════════════════════════════════════════════════
+
+BEFORE STARTING:
+☐ Extract project files
+☐ Run: mvn spring-boot:run
+☐ Verify ./data/stockdb.mv.db created
+☐ Test login with admin1 / admin123
+☐ Test login with pranav / pranav123
+☐ Create first backup
+
+DURING PROJECT (Weekly):
+☐ Sunday backup
+☐ Check application running smoothly
+☐ Add new users if needed (admin panel)
+☐ Monitor completed experiments
+
+END OF PROJECT:
+☐ Final backup
+☐ Export all data (admin panel → export)
+☐ Archive database file
+☐ Celebrate! 🎉
+
+═══════════════════════════════════════════════════════════════════
+📧 QUICK REFERENCE
+═══════════════════════════════════════════════════════════════════
+
+Database File: ./data/stockdb.mv.db
+Start App: mvn spring-boot:run
+Access: http://localhost:8080
+H2 Console: http://localhost:8080/h2-console
+Admin Login: admin1 / admin123
+User Logins: pranav, ishan, sairaj, unnat, nikhil, mayur
+User Password: [username]123
+
+Backup Command (Windows):
+copy "data\stockdb.mv.db" "backups\backup_DATE.mv.db"
+
+Backup Command (Mac/Linux):
+cp ./data/stockdb.mv.db ./backups/backup_DATE.mv.db
+
+═══════════════════════════════════════════════════════════════════
+✅ YOU'RE ALL SET!
+═══════════════════════════════════════════════════════════════════
+
+Your H2 database is configured for:
+✓ 3+ months of operation
+✓ Unlimited users
+✓ Persistent data storage
+✓ Easy backup and restore
+✓ Zero maintenance
+
+Just run the app and start collecting data!
+═══════════════════════════════════════════════════════════════════

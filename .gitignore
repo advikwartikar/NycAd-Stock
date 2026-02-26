@@ -1,0 +1,44 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# Eclipse
+.settings/
+.classpath
+.project
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# NetBeans
+nb-configuration.xml
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build scripts (temporary)
+*.sh
+
+# Keep CSV data files!
+!src/main/resources/data/*.csv
+
+### Database Files ###
+/data/
+*.db
+*.mv.db
+*.trace.db
+backup_*.csv

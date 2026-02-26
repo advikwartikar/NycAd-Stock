@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Experiment Results</title><meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:#f5f7fa}
+.navbar{background:linear-gradient(135deg,#dc2626,#991b1b);color:white;padding:15px 20px}
+.navbar-content{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.navbar h1{font-size:20px}.navbar a{color:white;text-decoration:none;padding:8px 14px;border-radius:5px;font-size:14px}
+.navbar a:hover{background:rgba(255,255,255,0.2)}.navbar-links{display:flex;gap:10px}
+.container{max-width:1400px;margin:30px auto;padding:0 20px}
+.card{background:white;padding:25px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.card h2{font-size:20px;color:#333;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:13px 15px;text-align:left;border-bottom:1px solid #f0f0f0}
+th{background:#f9f9f9;color:#666;font-weight:600;text-transform:uppercase;font-size:11px}
+tr:hover{background:#fafafa}
+.no-data{color:#999;padding:30px;text-align:center}
+.btn{display:inline-block;padding:6px 12px;background:#dc2626;color:white;text-decoration:none;border-radius:5px;font-size:12px}
+.btn:hover{background:#b91c1c}
+</style>
+<script>
+function filter(){
+  const q=document.getElementById('q').value.toLowerCase();
+  document.querySelectorAll('tbody tr').forEach(r=>{r.style.display=r.innerText.toLowerCase().includes(q)?'':'none'});
+}
+</script>
+</head>
+<body>
+<div class="navbar"><div class="navbar-content">
+  <h1>👨‍💼 Admin Panel</h1>
+  <div class="navbar-links">
+    <a href="/admin/dashboard">Dashboard</a>
+    <a href="/admin/users">Manage Users</a>
+    <a href="/admin/experiments">Experiment Results</a>
+    <a href="/logout">Logout</a>
+  </div>
+</div></div>
+
+<div class="container">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2>Completed Experiment Sessions (<span th:text="${#lists.size(sessions)}">0</span>)</h2>
+      <input id="q" placeholder="Search…" oninput="filter()"
+        style="padding:8px 12px;border:2px solid #e0e0e0;border-radius:6px;width:220px;font-size:13px">
+    </div>
+
+    <div class="no-data" th:if="${#lists.isEmpty(sessions)}">
+      No completed experiments yet. Users need to complete the experiment first.
+    </div>
+
+    <table th:unless="${#lists.isEmpty(sessions)}">
+      <thead><tr>
+        <th>#</th><th>User</th><th>Username</th><th>Started</th><th>Completed</th><th>Duration</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        <tr th:each="s,i : ${sessions}">
+          <td th:text="${i.count}"></td>
+          <td th:text="${s.user.fullName}"></td>
+          <td th:text="${s.user.username}"></td>
+          <td th:text="${s.startTime != null ? #temporals.format(s.startTime,'dd MMM yyyy HH:mm') : '—'}"></td>
+          <td th:text="${s.endTime   != null ? #temporals.format(s.endTime,  'dd MMM yyyy HH:mm') : '—'}"></td>
+          <td>—</td>
+          <td><a th:href="'/admin/user/'+${s.user.id}" class="btn">View User</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,70 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                   QUICK LOCAL TEST STEPS                          ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+Before deploying to Railway, test locally:
+
+STEP 1: Extract and Navigate
+─────────────────────────────
+Extract STOCK-TRADING-COMPLETE-WORKING.zip to D:\STA
+cd D:\STA
+
+STEP 2: Run Locally
+────────────────────
+mvn spring-boot:run
+
+STEP 3: Check Console Output
+──────────────────────────────
+Wait for these messages:
+
+✓ "Created 2 admin users (admin1, admin2)"
+✓ "Created 30 regular users (user1-user30)"  
+✓ "Stocks loaded successfully: 110"
+✓ "Started StockTradingApplication"
+
+If you DON'T see these messages, something is wrong!
+
+STEP 4: Test in Browser
+────────────────────────
+Open: http://localhost:8080
+
+TEST 1 - Admin Login:
+Username: admin1
+Password: admin123
+
+Expected Results:
+✅ Redirects to /admin/dashboard
+✅ See stats (30 users, 0 active, 0 completed)
+✅ Click "Users" → See list of 30 users
+✅ Click any user → See user details
+✅ Try toggle status → Works
+✅ NO experiment access for admin
+
+TEST 2 - User Login:
+Username: user1  
+Password: user123
+
+Expected Results:
+✅ See dashboard with "Begin Experiment" button
+✅ Click "Stocks" → See all 110 stocks
+✅ Click any stock → See stock details
+✅ Click "Begin Experiment" → Starts experiment
+✅ See trading interface with EXIT button
+✅ Can make BUY/SELL/HOLD decisions
+✅ Can click EXIT & Save Progress
+
+STEP 5: Deploy to Railway
+───────────────────────────
+Only if ALL local tests pass!
+
+git init
+git add .
+git commit -m "Stock trading app"
+git push to GitHub
+Deploy from Railway
+
+╔═══════════════════════════════════════════════════════════════════╗
+║  IF 500 ERROR: Check console for error messages and stack trace  ║
+║  IF NO DATA: Check if CSV files are in src/main/resources/data/  ║
+║  IF PORT BUSY: Change port in application.properties             ║
+╚═══════════════════════════════════════════════════════════════════╝
