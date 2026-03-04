@@ -1,0 +1,146 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║              CSV EXPORT - COLUMN REFERENCE                         ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+ENHANCED EXPORT COLUMNS (31 total)
+═══════════════════════════════════════════════════════════════════
+
+BASIC INFO (Columns 1-6):
+───────────────────────────────────────────────────────────────────
+1.  Username              User's login name
+2.  Full Name             User's complete name
+3.  Email                 User's email address
+4.  Total Stocks          Number of stocks completed (0-15)
+5.  Final Capital         Ending capital amount (₹)
+6.  Total P/L             Total profit/loss (₹)
+
+BULLISH MARKET METRICS (Columns 7-13):
+───────────────────────────────────────────────────────────────────
+7.  Bullish Sharpe        Risk-adjusted return ratio
+8.  Bullish MaxDD         Maximum drawdown percentage
+9.  Bullish Volatility    Standard deviation of returns
+10. Bullish WinRate       Percentage of profitable trades
+11. Bullish Trades        Total number of trades
+12. Bullish ProfitFactor  Gross profit / Gross loss
+13. Bullish TimeInMarket  Average holding period (days)
+
+BEARISH MARKET METRICS (Columns 14-20):
+───────────────────────────────────────────────────────────────────
+14. Bearish Sharpe        Risk-adjusted return ratio
+15. Bearish MaxDD         Maximum drawdown percentage
+16. Bearish Volatility    Standard deviation of returns
+17. Bearish WinRate       Percentage of profitable trades
+18. Bearish Trades        Total number of trades
+19. Bearish ProfitFactor  Gross profit / Gross loss
+20. Bearish TimeInMarket  Average holding period (days)
+
+SIDEWAYS MARKET METRICS (Columns 21-27):
+───────────────────────────────────────────────────────────────────
+21. Sideways Sharpe       Risk-adjusted return ratio
+22. Sideways MaxDD        Maximum drawdown percentage
+23. Sideways Volatility   Standard deviation of returns
+24. Sideways WinRate      Percentage of profitable trades
+25. Sideways Trades       Total number of trades
+26. Sideways ProfitFactor Gross profit / Gross loss
+27. Sideways TimeInMarket Average holding period (days)
+
+SESSION INFO (Columns 28-30):
+───────────────────────────────────────────────────────────────────
+28. Completed             Yes/No - experiment completion status
+29. Start Time            Timestamp when experiment started
+30. End Time              Timestamp when experiment ended
+
+═══════════════════════════════════════════════════════════════════
+METRIC DEFINITIONS
+═══════════════════════════════════════════════════════════════════
+
+Sharpe Ratio:
+  Measures risk-adjusted return
+  Formula: Average Return / Volatility
+  Higher = Better risk-adjusted performance
+  Typical range: -1.0 to 3.0
+  Good: > 1.0
+
+Maximum Drawdown:
+  Largest peak-to-trough decline
+  Formula: (Peak - Trough) / Peak × 100
+  Lower = Better downside protection
+  Expressed as percentage
+  Good: < 10%
+
+Volatility:
+  Standard deviation of returns
+  Measures consistency/stability
+  Lower = More stable performance
+  Expressed as percentage
+  Good: < 20%
+
+Win Rate:
+  Percentage of profitable trades
+  Formula: Winning Trades / Total Trades × 100
+  Higher = More consistent wins
+  Typical range: 30% - 70%
+  Good: > 50%
+
+Number of Trades:
+  Total buy + sell actions
+  Indicates trading frequency
+  More active traders have higher counts
+
+Profit Factor:
+  Ratio of gross profits to gross losses
+  Formula: Total Gains / Total Losses
+  Above 1.0 = Net profitable
+  Typical range: 0.5 - 2.5
+  Good: > 1.2
+
+Time in Market:
+  Average days holding positions
+  Indicates trading style
+  Higher = Buy-and-hold strategy
+  Lower = Active trading strategy
+  Typical range: 2-8 days
+
+═══════════════════════════════════════════════════════════════════
+EXAMPLE ANALYSIS
+═══════════════════════════════════════════════════════════════════
+
+Participant A:
+- Bullish Sharpe: 0.95  (Strong in uptrends)
+- Bearish Sharpe: -0.45 (Struggles in downtrends)
+- Sideways Sharpe: 0.15 (Weak in range-bound markets)
+
+INTERPRETATION:
+→ Excels in bull markets
+→ Needs better bear market strategy
+→ Struggles with consolidation periods
+→ Likely uses momentum-based approach
+
+Participant B:
+- Bullish Sharpe: 0.52
+- Bearish Sharpe: 0.48
+- Sideways Sharpe: 0.45
+
+INTERPRETATION:
+→ Consistent across all market conditions
+→ Adaptable trading style
+→ Lower overall returns but more stable
+→ Better risk management
+
+═══════════════════════════════════════════════════════════════════
+RESEARCH QUESTIONS YOU CAN ANSWER
+═══════════════════════════════════════════════════════════════════
+
+1. Which participants adapt best to different market conditions?
+2. Who excels in bull markets but struggles in bears?
+3. Is performance correlated across different trends?
+4. Do high-frequency traders perform differently than buy-and-hold?
+5. What's the relationship between win rate and profit factor?
+6. Do participants with higher volatility achieve higher returns?
+7. How does time in market correlate with profitability?
+8. Which market condition is hardest for participants?
+9. Are there distinct trading style clusters?
+10. What metrics best predict overall success?
+
+═══════════════════════════════════════════════════════════════════
+CSV-COLUMN-REFERENCE.txt saved

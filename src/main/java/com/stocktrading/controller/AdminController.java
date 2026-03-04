@@ -1,0 +1,233 @@
+package com.stocktrading.controller;
+
+import com.stocktrading.model.User;
+import com.stocktrading.model.ExperimentSession;
+import com.stocktrading.model.MarketTrend;
+import com.stocktrading.dto.TrendMetricsDTO;
+import com.stocktrading.repository.ExperimentSessionRepository;
+import com.stocktrading.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+@RequestMapping("/admin")
+public class AdminController {
+
+    @Autowired private UserService userService;
+    @Autowired private ExperimentSessionRepository sessionRepository;
+    @Autowired private ExperimentService experimentService;
+    @Autowired private MetricsCalculator metricsCalculator;
+
+    @GetMapping("/dashboard")
+    public String dashboard(Model model, Authentication auth) {
+        User admin = getAdmin(auth);
+        List<User> regularUsers = userService.getAllUsers().stream()
+                .filter(u -> "USER".equals(u.getRole()))
+                .toList();
+        
+        List<ExperimentSession> completedSessions = sessionRepository.findByCompletedTrue();
+
+        model.addAttribute("admin", admin);
+        model.addAttribute("totalUsers", regularUsers.size());
+        model.addAttribute("activeUsers", regularUsers.stream().filter(User::getActive).count());
+        model.addAttribute("completedExps", completedSessions.size());
+        model.addAttribute("recentSessions", completedSessions.stream().limit(10).toList());
+        return "admin/dashboard";
+    }
+
+    @GetMapping("/users")
+    public String listUsers(Model model, Authentication auth) {
+        User admin = getAdmin(auth);
+        List<User> regularUsers = userService.getAllUsers().stream()
+                .filter(u -> "USER".equals(u.getRole()))
+                .toList();
+        
+        model.addAttribute("admin", admin);
+        model.addAttribute("users", regularUsers);
+        return "admin/users";
+    }
+
+    @GetMapping("/user/{id}")
+    public String userDetail(@PathVariable Long id, Model model, Authentication auth) {
+        User admin = getAdmin(auth);
+        User user = userService.getUserById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        model.addAttribute("admin", admin);
+        model.addAttribute("user", user);
+        return "admin/user-detail";
+    }
+
+    @GetMapping("/user/{id}/edit")
+    public String editUser(@PathVariable Long id, Model model, Authentication auth) {
+        User admin = getAdmin(auth);
+        User user = userService.getUserById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        model.addAttribute("admin", admin);
+        model.addAttribute("user", user);
+        return "admin/edit-user";
+    }
+
+    @PostMapping("/user/{id}/edit")
+    public String updateUser(@PathVariable Long id,
+                           @RequestParam String fullName,
+                           @RequestParam String email,
+                           @RequestParam(required = false) String password,
+                           @RequestParam Double credits,
+                           RedirectAttributes ra) {
+        try {
+            userService.updateUser(id, fullName, email, password, credits);
+            ra.addFlashAttribute("success", "User updated successfully");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error: " + e.getMessage());
+        }
+        return "redirect:/admin/user/" + id;
+    }
+
+    @GetMapping("/users/add")
+    public String addUserForm(Model model, Authentication auth) {
+        model.addAttribute("admin", getAdmin(auth));
+        return "admin/add-user";
+    }
+
+    @PostMapping("/users/add")
+    public String createUser(@RequestParam String username,
+                           @RequestParam String password,
+                           @RequestParam String fullName,
+                           @RequestParam String email,
+                           RedirectAttributes ra) {
+        try {
+            userService.createUser(username, password, fullName, email);
+            ra.addFlashAttribute("success", "User created successfully");
+            return "redirect:/admin/users";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error: " + e.getMessage());
+            return "redirect:/admin/users/add";
+        }
+    }
+
+    @PostMapping("/user/{id}/toggle")
+    public String toggleUserStatus(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            userService.toggleUserStatus(id);
+            ra.addFlashAttribute("success", "User status updated");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error: " + e.getMessage());
+        }
+        return "redirect:/admin/user/" + id;
+    }
+
+    @PostMapping("/user/{id}/delete")
+    public String deleteUser(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            User user = userService.getUserById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            if ("ADMIN".equals(user.getRole())) {
+                ra.addFlashAttribute("error", "Cannot delete admin users");
+                return "redirect:/admin/users";
+            }
+            
+            userService.deleteUser(id);
+            ra.addFlashAttribute("success", "User deleted successfully");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error: " + e.getMessage());
+        }
+        return "redirect:/admin/users";
+    }
+
+    @GetMapping("/export-enhanced")
+    @ResponseBody
+    public ResponseEntity<byte[]> exportEnhancedData() {
+        try {
+            StringBuilder csv = new StringBuilder();
+            
+            // Enhanced CSV header with trend metrics
+            csv.append("Username,Full Name,Email,Total Stocks,Final Capital,Total P/L,");
+            csv.append("Bullish Sharpe,Bullish MaxDD,Bullish Volatility,Bullish WinRate,Bullish Trades,Bullish ProfitFactor,Bullish TimeInMarket,");
+            csv.append("Bearish Sharpe,Bearish MaxDD,Bearish Volatility,Bearish WinRate,Bearish Trades,Bearish ProfitFactor,Bearish TimeInMarket,");
+            csv.append("Sideways Sharpe,Sideways MaxDD,Sideways Volatility,Sideways WinRate,Sideways Trades,Sideways ProfitFactor,Sideways TimeInMarket,");
+            csv.append("Completed,Start Time,End Time\n");
+            
+            List<User> allUsers = userService.getAllUsers();
+            
+            for (User user : allUsers) {
+                if ("ADMIN".equals(user.getRole())) continue;
+                
+                ExperimentSession session = experimentService.getAnySession(user);
+                
+                if (session == null) {
+                    csv.append(String.format("%s,%s,%s,0,100000,0,", 
+                        user.getUsername(), user.getFullName(), user.getEmail()));
+                    csv.append("0,0,0,0,0,0,0,");
+                    csv.append("0,0,0,0,0,0,0,");
+                    csv.append("0,0,0,0,0,0,0,");
+                    csv.append("No,N/A,N/A\n");
+                    continue;
+                }
+                
+                Map<MarketTrend, TrendMetricsDTO> trendMetrics = metricsCalculator.calculateTrendMetrics(session);
+                
+                TrendMetricsDTO bullish = trendMetrics.get(MarketTrend.BULLISH);
+                TrendMetricsDTO bearish = trendMetrics.get(MarketTrend.BEARISH);
+                TrendMetricsDTO sideways = trendMetrics.get(MarketTrend.SIDEWAYS);
+                
+                double finalCapital = session.getCurrentCapital() != null ? session.getCurrentCapital() : 100000.0;
+                double totalPL = finalCapital - 100000.0;
+                
+                csv.append(String.format("%s,%s,%s,%d,%.2f,%.2f,",
+                    user.getUsername(), user.getFullName(), user.getEmail(),
+                    session.getCurrentStockIndex(), finalCapital, totalPL));
+                
+                csv.append(String.format("%.2f,%.2f,%.2f,%.2f,%d,%.2f,%.2f,",
+                    bullish.getSharpeRatio(), bullish.getMaxDrawdown(), bullish.getVolatility(),
+                    bullish.getWinRate(), bullish.getNumberOfTrades(), bullish.getProfitFactor(),
+                    bullish.getAvgTimeInMarket()));
+                
+                csv.append(String.format("%.2f,%.2f,%.2f,%.2f,%d,%.2f,%.2f,",
+                    bearish.getSharpeRatio(), bearish.getMaxDrawdown(), bearish.getVolatility(),
+                    bearish.getWinRate(), bearish.getNumberOfTrades(), bearish.getProfitFactor(),
+                    bearish.getAvgTimeInMarket()));
+                
+                csv.append(String.format("%.2f,%.2f,%.2f,%.2f,%d,%.2f,%.2f,",
+                    sideways.getSharpeRatio(), sideways.getMaxDrawdown(), sideways.getVolatility(),
+                    sideways.getWinRate(), sideways.getNumberOfTrades(), sideways.getProfitFactor(),
+                    sideways.getAvgTimeInMarket()));
+                
+                csv.append(String.format("%s,%s,%s\n",
+                    session.getCompleted() ? "Yes" : "No",
+                    session.getStartTime() != null ? session.getStartTime().toString() : "N/A",
+                    session.getEndTime() != null ? session.getEndTime().toString() : "N/A"));
+            }
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv"));
+            String filename = "experiment_results_enhanced_" + 
+                java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv";
+            headers.setContentDispositionFormData("attachment", filename);
+            
+            return ResponseEntity.ok()
+                .headers(headers)
+                .body(csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    private User getAdmin(Authentication auth) {
+        return userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+    }
+}

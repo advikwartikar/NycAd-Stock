@@ -1,0 +1,367 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║         POSTGRESQL DATABASE - MIGRATION FROM H2                    ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+🎯 WHY POSTGRESQL INSTEAD OF H2?
+
+❌ H2 Problems on Render:
+  - File-based database can be lost on redeploys
+  - Limited to single instance
+  - Not suitable for production
+  - Data loss risk
+
+✅ PostgreSQL Benefits:
+  - Persistent across redeploys
+  - Render offers FREE tier (512 MB)
+  - Production-ready
+  - Better concurrency
+  - No data loss
+
+═══════════════════════════════════════════════════════════════════
+📦 WHAT'S CHANGED
+═══════════════════════════════════════════════════════════════════
+
+UPDATED FILES:
+✓ pom.xml
+  - Added PostgreSQL dependency
+  - H2 kept as optional for local development
+
+✓ application.properties
+  - Now uses PostgreSQL by default (production)
+  - Environment variables for database connection
+
+✓ application-dev.properties (NEW)
+  - H2 configuration for local development
+  - H2 console enabled at /h2-console
+
+✓ application-prod.properties (NEW)
+  - PostgreSQL configuration for Render
+  - Connection pool settings optimized
+
+✓ render.yaml
+  - Added PostgreSQL database service
+  - Auto-links database to web service
+
+✓ Dockerfile
+  - Sets production profile by default
+
+═══════════════════════════════════════════════════════════════════
+🚀 DEPLOYMENT ON RENDER (AUTOMATIC DATABASE SETUP)
+═══════════════════════════════════════════════════════════════════
+
+The render.yaml file automatically creates and connects PostgreSQL!
+
+STEP 1: Push to GitHub
+────────────────────────────────────
+cd "D:\NycAd Stock App"
+git add .
+git commit -m "Switch to PostgreSQL database"
+git push origin master
+
+STEP 2: Deploy on Render
+────────────────────────────────────
+1. Go to https://dashboard.render.com
+2. Click "New +" → "Blueprint"
+3. Connect your GitHub repository
+4. Render will read render.yaml and create:
+   ✓ Web Service (your Spring Boot app)
+   ✓ PostgreSQL Database (free tier)
+   ✓ Automatic connection between them
+
+STEP 3: Wait for Setup
+────────────────────────────────────
+Render will:
+1. Create PostgreSQL database (2-3 minutes)
+2. Build your application (5-10 minutes)
+3. Connect them automatically
+4. Start your app
+
+STEP 4: Verify
+────────────────────────────────────
+Check logs for:
+  ✓ HikariPool-1 - Starting...
+  ✓ HikariPool-1 - Start completed
+  ✓ Started StockTradingApplication
+
+═══════════════════════════════════════════════════════════════════
+🔧 MANUAL DATABASE SETUP (If render.yaml doesn't auto-create DB)
+═══════════════════════════════════════════════════════════════════
+
+STEP 1: Create PostgreSQL Database
+────────────────────────────────────
+1. In Render dashboard, click "New +"
+2. Select "PostgreSQL"
+3. Fill in:
+   - Name: stock-trading-db
+   - Database: stocktrading
+   - User: (auto-generated)
+   - Region: Oregon
+   - Plan: Free
+4. Click "Create Database"
+5. Wait 2-3 minutes for database to be ready
+
+STEP 2: Get Database Credentials
+────────────────────────────────────
+In database dashboard, you'll see:
+  - Internal Database URL
+  - External Database URL  
+  - Username
+  - Password
+  - Port
+
+Copy the "Internal Database URL" (looks like):
+  postgresql://user:password@host:5432/stocktrading
+
+STEP 3: Connect to Web Service
+────────────────────────────────────
+1. Go to your web service settings
+2. Add environment variables:
+
+   Key: DATABASE_URL
+   Value: [paste Internal Database URL]
+
+   Key: DB_USERNAME
+   Value: [database username]
+
+   Key: DB_PASSWORD
+   Value: [database password]
+
+   Key: SPRING_PROFILE
+   Value: prod
+
+3. Click "Save Changes"
+4. Service will auto-redeploy
+
+═══════════════════════════════════════════════════════════════════
+💻 LOCAL DEVELOPMENT (Using H2)
+═══════════════════════════════════════════════════════════════════
+
+You can still use H2 for local development!
+
+OPTION 1: Use Dev Profile (H2)
+────────────────────────────────────
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+This uses H2 database (file: ./data/stockdb.mv.db)
+Access H2 console: http://localhost:8080/h2-console
+
+OPTION 2: Use Local PostgreSQL (Optional)
+────────────────────────────────────
+If you want to test with PostgreSQL locally:
+
+1. Install PostgreSQL locally
+2. Create database:
+   createdb stocktrading
+
+3. Run with environment variables:
+   export DATABASE_URL=jdbc:postgresql://localhost:5432/stocktrading
+   export DB_USERNAME=postgres
+   export DB_PASSWORD=your_password
+   mvn spring-boot:run
+
+═══════════════════════════════════════════════════════════════════
+📊 DATABASE SCHEMA
+═══════════════════════════════════════════════════════════════════
+
+Hibernate will auto-create these tables in PostgreSQL:
+
+TABLES:
+✓ users
+  - id, username, password, full_name, email, role, credits, active
+
+✓ stocks
+  - id, symbol, name, current_price, high_price, low_price, volume, 
+    change_percent, active
+
+✓ experiment_stocks
+  - id, stock_symbol, sequence_order, segment_start_day, 
+    segment_end_day, csv_file_path, market_trend
+
+✓ experiment_sessions
+  - id, user_id, start_time, end_time, completed, current_stock_index,
+    current_day, current_capital, current_shares
+
+✓ experiment_decisions
+  - id, session_id, stock_index, day_number, action, price, quantity
+
+All tables auto-created by Hibernate on first run!
+
+═══════════════════════════════════════════════════════════════════
+🔍 VERIFY DATABASE CONNECTION
+═══════════════════════════════════════════════════════════════════
+
+After deployment, check Render logs:
+
+GOOD SIGNS:
+✓ "HikariPool-1 - Starting..."
+✓ "HikariPool-1 - Start completed"
+✓ "Hibernate: create table users..."
+✓ "Started StockTradingApplication"
+
+BAD SIGNS:
+❌ "Connection refused"
+❌ "Could not open JPA EntityManager"
+❌ "Failed to obtain JDBC Connection"
+
+If you see errors:
+1. Check DATABASE_URL is set correctly
+2. Verify database is "Available" in Render dashboard
+3. Check database is in same region as web service
+4. Verify firewall rules allow connection
+
+═══════════════════════════════════════════════════════════════════
+💾 DATABASE BACKUP & EXPORT
+═══════════════════════════════════════════════════════════════════
+
+EXPORT DATA (From Render Dashboard):
+1. Go to your PostgreSQL database
+2. Click "Info" tab
+3. Copy "External Database URL"
+4. Use pg_dump locally:
+
+   pg_dump [external_url] > backup.sql
+
+IMPORT DATA:
+   psql [external_url] < backup.sql
+
+EXPORT EXPERIMENT RESULTS:
+Use the admin panel's "Export Enhanced Data" button
+Downloads CSV with all participant data
+
+═══════════════════════════════════════════════════════════════════
+🔄 MIGRATING EXISTING H2 DATA TO POSTGRESQL
+═══════════════════════════════════════════════════════════════════
+
+If you have existing H2 data you want to migrate:
+
+STEP 1: Export from H2
+────────────────────────────────────
+1. Start app locally with H2
+2. Access H2 console: http://localhost:8080/h2-console
+3. Run SQL queries to export data:
+   
+   SELECT * FROM users;
+   SELECT * FROM experiment_sessions;
+   (etc.)
+
+4. Save results as CSV
+
+STEP 2: Import to PostgreSQL
+────────────────────────────────────
+1. Connect to Render PostgreSQL
+2. Use psql or pgAdmin
+3. Run INSERT statements or COPY commands
+
+NOTE: For fresh experiments, just deploy and let users start fresh!
+
+═══════════════════════════════════════════════════════════════════
+⚙️ POSTGRESQL CONFIGURATION (render.yaml)
+═══════════════════════════════════════════════════════════════════
+
+databases:
+  - name: stock-trading-db
+    databaseName: stocktrading
+    region: oregon
+    plan: free          # 512 MB storage, 1 GB RAM
+    ipAllowList: []     # Allow connections from Render services
+
+FREE TIER LIMITS:
+✓ 512 MB storage (plenty for your experiment)
+✓ 1 GB RAM
+✓ 97 max connections
+✓ Daily backups (7 days retention)
+✓ No credit card required
+
+═══════════════════════════════════════════════════════════════════
+📈 MONITORING DATABASE
+═══════════════════════════════════════════════════════════════════
+
+In Render PostgreSQL Dashboard:
+
+METRICS TAB:
+✓ CPU usage
+✓ Memory usage
+✓ Storage used
+✓ Connection count
+
+LOGS TAB:
+✓ Database connection logs
+✓ Query logs (if slow query logging enabled)
+
+INFO TAB:
+✓ Connection strings
+✓ Credentials
+✓ Version info
+
+═══════════════════════════════════════════════════════════════════
+🐛 TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════
+
+PROBLEM: "Connection refused to PostgreSQL"
+SOLUTION:
+  - Verify database is "Available" (not "Creating")
+  - Check DATABASE_URL environment variable is set
+  - Ensure using Internal Database URL (not External)
+  - Check both services in same region
+
+PROBLEM: "No database selected"
+SOLUTION:
+  - DATABASE_URL should end with /stocktrading
+  - Format: postgresql://user:pass@host:5432/stocktrading
+
+PROBLEM: "Too many connections"
+SOLUTION:
+  - Reduce spring.datasource.hikari.maximum-pool-size to 3
+  - Free tier has 97 max connections
+
+PROBLEM: "Disk quota exceeded"
+SOLUTION:
+  - Free tier has 512 MB limit
+  - Check database size in Render dashboard
+  - Clean up old experiment data if needed
+  - Upgrade to paid tier ($7/month = 1 GB)
+
+PROBLEM: App works locally but not on Render
+SOLUTION:
+  - Make sure SPRING_PROFILE=prod is set on Render
+  - Verify PostgreSQL dependency in pom.xml
+  - Check Dockerfile uses prod profile
+
+═══════════════════════════════════════════════════════════════════
+✅ VERIFICATION CHECKLIST
+═══════════════════════════════════════════════════════════════════
+
+Before deploying:
+☐ pom.xml has postgresql dependency
+☐ application.properties uses environment variables
+☐ render.yaml includes database service
+☐ Pushed all changes to GitHub
+
+After deploying:
+☐ PostgreSQL database shows "Available"
+☐ Web service logs show "HikariPool-1 - Start completed"
+☐ Can access login page
+☐ Can login as admin1 / admin123
+☐ Admin dashboard loads
+☐ Can create/view users
+☐ User can start experiment
+☐ 15 stocks load correctly
+☐ Trades save to database
+☐ Data persists after page refresh
+
+═══════════════════════════════════════════════════════════════════
+🎉 BENEFITS OF POSTGRESQL SETUP
+═══════════════════════════════════════════════════════════════════
+
+✅ Data persistence across redeploys
+✅ No data loss
+✅ Better performance for concurrent users
+✅ Production-ready database
+✅ Automatic backups (7 days)
+✅ Easy to export experiment results
+✅ Can query database directly if needed
+✅ Scale to paid tier if needed ($7/month = 1 GB)
+
+Your experiment data is now safe and persistent! 🎊
+
+═══════════════════════════════════════════════════════════════════

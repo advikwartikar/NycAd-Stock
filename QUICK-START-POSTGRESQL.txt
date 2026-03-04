@@ -1,0 +1,81 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║       QUICK START - POSTGRESQL ON RENDER (5 MINUTES)              ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+🚀 FASTEST DEPLOYMENT (Automatic PostgreSQL Setup)
+
+STEP 1: Push to GitHub (30 seconds)
+─────────────────────────────────────────────────────────────────
+cd "D:\NycAd Stock App"
+git add .
+git commit -m "PostgreSQL + 15 stocks ready"
+git push origin master
+
+STEP 2: Deploy on Render (1 click)
+─────────────────────────────────────────────────────────────────
+1. Go to: https://dashboard.render.com
+2. Click: "New +" → "Blueprint"
+3. Select: Your GitHub repository
+4. Click: "Apply"
+
+✨ DONE! Render will automatically:
+   ✓ Create PostgreSQL database (Free 512 MB)
+   ✓ Build your Spring Boot app
+   ✓ Connect them together
+   ✓ Start everything
+
+⏱️ Wait 8-10 minutes for complete setup
+
+─────────────────────────────────────────────────────────────────
+📊 WHAT YOU GET:
+─────────────────────────────────────────────────────────────────
+
+✅ Web App:        https://nycad-stock-trading.onrender.com
+✅ PostgreSQL DB:  512 MB persistent storage
+✅ Auto-backups:   7 days retention
+✅ SSL/HTTPS:      Automatic
+✅ Cost:           $0/month (Free tier)
+
+─────────────────────────────────────────────────────────────────
+👥 LOGIN CREDENTIALS:
+─────────────────────────────────────────────────────────────────
+
+Admin:     admin1 / admin123
+Users:     pranav / pranav123
+           ishan / ishan123
+           sairaj / sairaj123
+           unnat / unnat123
+           nikhil / nikhil123
+           mayur / mayur123
+
+─────────────────────────────────────────────────────────────────
+✅ VERIFY IT WORKS:
+─────────────────────────────────────────────────────────────────
+
+1. Visit your Render URL
+2. Login as admin1
+3. See admin dashboard
+4. Click "Export Enhanced Data"
+5. Login as pranav
+6. Click "Start Experiment"
+7. See 15 stocks loaded
+8. Make a trade
+9. Refresh page - trade is saved! ✅
+
+─────────────────────────────────────────────────────────────────
+💻 LOCAL DEVELOPMENT (H2):
+─────────────────────────────────────────────────────────────────
+
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+Uses H2 database locally (no PostgreSQL needed!)
+Access: http://localhost:8080
+
+─────────────────────────────────────────────────────────────────
+📖 FULL DOCS:
+─────────────────────────────────────────────────────────────────
+
+See: POSTGRESQL-MIGRATION-GUIDE.txt
+     RENDER-DEPLOYMENT-GUIDE.txt
+
+─────────────────────────────────────────────────────────────────

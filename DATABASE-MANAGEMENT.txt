@@ -1,0 +1,72 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║           3-MONTH PROJECT - DATABASE MANAGEMENT                    ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+DATABASE TYPE: H2 File-Based (Persistent)
+LOCATION: ./data/stockdb.mv.db
+DURATION: Suitable for 3+ months
+USER CAPACITY: Unlimited
+
+FIRST RUN:
+──────────
+1. Extract project
+2. Run: mvn spring-boot:run
+3. Database file created automatically in ./data/
+4. 6 users + 1 admin loaded
+
+DATA PERSISTENCE:
+─────────────────
+✓ Survives application restarts
+✓ Survives server reboots  
+✓ Data accumulates over time
+✓ No data loss on restart
+
+ADDING USERS:
+─────────────
+Admin can add unlimited users anytime:
+1. Login as admin1 / admin123
+2. Admin Panel → Users → Add User
+3. Fill details → Create
+4. New user ready immediately
+
+BACKING UP DATA:
+────────────────
+Weekly Backup (Recommended):
+1. Stop application
+2. Copy ./data/stockdb.mv.db
+3. Store with date: stockdb_2026-02-23.mv.db
+4. Restart application
+
+Or use built-in export (when implemented)
+
+VIEWING DATA:
+─────────────
+Method 1: Admin Panel (Easy)
+- View users, experiments, results
+
+Method 2: H2 Console (Advanced)
+- URL: http://localhost:8080/h2-console
+- JDBC URL: jdbc:h2:file:./data/stockdb
+- Username: sa
+- Password: (blank)
+
+DISK SPACE:
+───────────
+Expected size after 3 months:
+- 50 users, 200 experiments: ~100 MB
+- Should be fine for years
+
+MAINTENANCE:
+────────────
+Weekly: Backup database file
+Monthly: Review users, archive data
+End of 3 months: Final export
+
+RESTORING BACKUP:
+─────────────────
+1. Stop application
+2. Replace ./data/stockdb.mv.db with backup
+3. Restart application
+4. All data restored!
+
+READY FOR 3 MONTHS! 🚀

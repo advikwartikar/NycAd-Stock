@@ -1,0 +1,241 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║           RENDER DEPLOYMENT GUIDE - JAVA SPRING BOOT              ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+🔧 ISSUE: Render detected Node.js instead of Java
+✅ SOLUTION: Configuration files added to force Java environment
+
+═══════════════════════════════════════════════════════════════════
+📁 NEW CONFIGURATION FILES INCLUDED
+═══════════════════════════════════════════════════════════════════
+
+1. render.yaml
+   - Tells Render this is a Java web service
+   - Specifies Maven build command
+   - Sets Java as environment
+
+2. system.properties
+   - Specifies Java 17 runtime
+   - Required for Render to install correct JDK
+
+3. .render-buildpacks.json
+   - Forces Heroku JVM buildpack
+   - Ensures Maven is available
+
+═══════════════════════════════════════════════════════════════════
+🚀 DEPLOYMENT STEPS (METHOD 1: Using render.yaml)
+═══════════════════════════════════════════════════════════════════
+
+STEP 1: Extract and Push to GitHub
+────────────────────────────────────
+1. Extract STOCK-TRADING-COMPLETE-WORKING.zip
+2. Replace all files in your project folder
+3. Commit and push:
+
+cd "D:\NycAd Stock App"
+git add render.yaml system.properties .render-buildpacks.json
+git add .
+git commit -m "Add Render configuration for Java deployment"
+git push origin master
+
+STEP 2: Deploy on Render
+────────────────────────────────────
+1. Go to https://dashboard.render.com
+2. Click "New +" → "Web Service"
+3. Connect to your GitHub repository
+4. Render will auto-detect render.yaml
+5. Click "Apply" to use the configuration
+6. Click "Create Web Service"
+
+STEP 3: Wait for Build
+────────────────────────────────────
+Build will take 5-10 minutes. You should see:
+  ✓ Detecting Java application
+  ✓ Installing OpenJDK 17
+  ✓ Installing Maven
+  ✓ Running: mvn clean install -DskipTests
+  ✓ [BUILD SUCCESS]
+  ✓ Starting application
+
+STEP 4: Access Your App
+────────────────────────────────────
+URL will be: https://nycad-stock-trading.onrender.com
+(or whatever name you chose)
+
+═══════════════════════════════════════════════════════════════════
+🔧 ALTERNATIVE: MANUAL CONFIGURATION (If render.yaml doesn't work)
+═══════════════════════════════════════════════════════════════════
+
+If Render still detects Node.js:
+
+STEP 1: In Render Dashboard
+────────────────────────────────────
+1. Click on your service
+2. Go to "Settings" tab
+3. Find "Environment" section
+4. Change from "Node" to "Java"
+5. Click "Save Changes"
+
+STEP 2: Set Build & Start Commands
+────────────────────────────────────
+Still in Settings:
+
+Build Command:
+  mvn clean install -DskipTests
+
+Start Command:
+  java -jar target/stock-trading-app-0.0.1-SNAPSHOT.jar
+
+STEP 3: Set Environment Variables
+────────────────────────────────────
+Add these in "Environment" section:
+
+Key: JAVA_TOOL_OPTIONS
+Value: -Xmx512m
+
+Key: PORT
+Value: 8080
+
+STEP 4: Trigger Manual Deploy
+────────────────────────────────────
+1. Go to "Manual Deploy" tab
+2. Click "Clear build cache & deploy"
+3. Wait 5-10 minutes
+
+═══════════════════════════════════════════════════════════════════
+🐳 ALTERNATIVE: DOCKERFILE APPROACH (Most Reliable)
+═══════════════════════════════════════════════════════════════════
+
+Create Dockerfile in project root:
+
+FROM maven:3.9-eclipse-temurin-17-alpine AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean install -DskipTests
+
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+Then in Render:
+1. Select "Docker" as environment
+2. Render will use Dockerfile automatically
+3. No build command needed
+
+═══════════════════════════════════════════════════════════════════
+❌ TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════
+
+PROBLEM: "mvn: command not found"
+SOLUTION: 
+  - Make sure render.yaml is in project root
+  - Make sure you pushed render.yaml to GitHub
+  - Try manual configuration method above
+
+PROBLEM: "Could not find or load main class"
+SOLUTION:
+  - Check JAR name in target/ folder
+  - Update startCommand in render.yaml to match actual JAR name
+
+PROBLEM: Build succeeds but app crashes
+SOLUTION:
+  - Check Render logs for actual error
+  - Might be database connection issue
+  - H2 database path might need adjustment
+
+PROBLEM: App starts but shows blank page
+SOLUTION:
+  - Check if PORT environment variable is set
+  - Make sure Spring Boot is listening on $PORT
+  - Add to application.properties:
+    server.port=${PORT:8080}
+
+═══════════════════════════════════════════════════════════════════
+📊 RENDER FREE TIER LIMITS
+═══════════════════════════════════════════════════════════════════
+
+✓ 750 hours/month (sufficient for continuous running)
+✓ Sleeps after 15 minutes of inactivity
+✓ Cold start: ~30 seconds to wake up
+✓ 512 MB RAM
+✓ Shared CPU
+
+NOTE: For 3-month experiment with 6 users, free tier should work.
+If you need 24/7 uptime (no sleep), upgrade to $7/month.
+
+═══════════════════════════════════════════════════════════════════
+🎯 EXPECTED BUILD OUTPUT
+═══════════════════════════════════════════════════════════════════
+
+When successful, you'll see:
+
+==> Cloning from https://github.com/[your-repo]
+==> Checking out commit...
+==> Using Java version 17
+==> Installing Maven
+==> Running build command 'mvn clean install -DskipTests'...
+[INFO] Scanning for projects...
+[INFO] Building stock-trading-app 0.0.1-SNAPSHOT
+[INFO] Compiling 32 source files
+[INFO] BUILD SUCCESS
+==> Starting service with 'java -jar target/*.jar'...
+  
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.x.x)
+
+Started StockTradingApplication in X seconds
+
+==> Your service is live 🎉
+
+═══════════════════════════════════════════════════════════════════
+✅ VERIFICATION CHECKLIST
+═══════════════════════════════════════════════════════════════════
+
+After deployment:
+☐ Visit your Render URL
+☐ See login page (not error page)
+☐ Login as admin1 / admin123
+☐ See admin dashboard
+☐ Try login as pranav / pranav123
+☐ Start experiment
+☐ See 15 stocks loaded
+☐ Make a trade decision
+☐ Verify it works
+
+═══════════════════════════════════════════════════════════════════
+💡 TIPS
+═══════════════════════════════════════════════════════════════════
+
+1. First deployment takes longer (10-15 min)
+   Subsequent deploys: 5-7 minutes
+
+2. Check logs in Render dashboard if issues occur
+   Dashboard → Your Service → Logs
+
+3. Render free tier sleeps after 15 min inactivity
+   First request after sleep takes ~30 seconds
+
+4. For production (no sleep):
+   Upgrade to Starter plan ($7/month)
+
+5. Database persists across deploys
+   H2 file is stored in /data directory
+
+═══════════════════════════════════════════════════════════════════
+🎉 YOU'RE DONE!
+═══════════════════════════════════════════════════════════════════
+
+Your Spring Boot app should now deploy successfully on Render!
+
+Questions? Check Render's Java deployment docs:
+https://render.com/docs/deploy-spring-boot
+
+═══════════════════════════════════════════════════════════════════
