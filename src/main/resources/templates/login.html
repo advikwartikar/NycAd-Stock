@@ -68,23 +68,7 @@
         button:hover {
             transform: translateY(-2px);
         }
-        .credentials {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f5f5f5;
-            border-radius: 5px;
-            font-size: 13px;
-        }
-        .credentials h3 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        .credentials p {
-            margin: 5px 0;
-            text-align: left;
-            color: #555;
-        }
+      
         .error {
             background: #ffebee;
             color: #c62828;
@@ -109,6 +93,7 @@
         </div>
         
         <form th:action="@{/login}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="form-group">
                 <label>Username</label>
                 <input type="text" name="username" required autofocus>
@@ -122,11 +107,7 @@
             <button type="submit">Login</button>
         </form>
         
-        <div class="credentials">
-            <h3>Test Credentials:</h3>
-            <p><strong>Admin:</strong> admin1 / admin123</p>
-            <p><strong>User:</strong> user1 / user123</p>
-        </div>
+       
     </div>
 </body>
 </html>
