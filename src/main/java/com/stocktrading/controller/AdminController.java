@@ -41,7 +41,9 @@ public class AdminController {
                 .filter(u -> "USER".equals(u.getRole()))
                 .toList();
         
-        List<ExperimentSession> completedSessions = sessionRepository.findByCompletedTrue();
+        List<ExperimentSession> completedSessions = sessionRepository.findByCompletedTrue().stream()
+                .filter(s -> s != null && s.getUser() != null)
+                .toList();
 
         model.addAttribute("admin", admin);
         model.addAttribute("totalUsers", regularUsers.size());
@@ -55,7 +57,13 @@ public class AdminController {
     @GetMapping("/experiments")
     public String experiments(Model model, Authentication auth) {
         User admin = getAdmin(auth);
+<<<<<<< ours
         List<ExperimentSession> sessions = sessionRepository.findByCompletedTrue();
+=======
+        List<ExperimentSession> sessions = sessionRepository.findByCompletedTrue().stream()
+                .filter(s -> s != null && s.getUser() != null)
+                .toList();
+>>>>>>> theirs
 
         model.addAttribute("admin", admin);
         model.addAttribute("sessions", sessions);

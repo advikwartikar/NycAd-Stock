@@ -104,7 +104,11 @@ th { background: #f9fafb; color: #6b7280; font-weight: 600; text-transform: uppe
       </thead>
       <tbody>
         <tr th:each="session : ${recentSessions}">
+<<<<<<< ours
           <td><strong th:text="${session.user.username}">user1</strong></td>
+=======
+          <td><strong th:text="${session.user != null ? session.user.username : 'Unknown'}">user1</strong></td>
+>>>>>>> theirs
           <td th:text="${session.endTime != null ? #temporals.format(session.endTime, 'MMM dd, yyyy HH:mm') : '—'}">Feb 18, 2026 10:30</td>
           <td th:text="${session.currentStockIndex != null ? session.currentStockIndex * 10 : 0}">100</td>
           <td><span class="badge badge-done">Completed</span></td>
