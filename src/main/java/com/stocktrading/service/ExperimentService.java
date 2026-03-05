@@ -191,21 +191,107 @@ public class ExperimentService {
 
     public Map<String, Object> getSessionSummary(ExperimentSession session) {
         Map<String, Object> summary = new HashMap<>();
-        
+
+        summary.put("fullName", session.getUser() != null ? session.getUser().getFullName() : "Trader");
+        summary.put("totalDecisions", 0);
+        summary.put("totalBuys", 0L);
+        summary.put("totalSells", 0L);
+        summary.put("totalHolds", 0L);
+        summary.put("startCapital", INITIAL_CAPITAL);
+        summary.put("finalCapital", INITIAL_CAPITAL);
+        summary.put("totalProfitLoss", 0.0);
+        summary.put("stocksTraded", session.getCurrentStockIndex() != null ? session.getCurrentStockIndex() : 0);
+        summary.put("averageReturn", 0.0);
+        summary.put("stockSummaries", new ArrayList<>());
+        summary.put("session", session);
+
         try {
             List<ExperimentDecision> allDecisions = decisionRepository
                 .findBySessionOrderByStockIndexAscDayNumberAsc(session);
-            
+
             if (allDecisions == null) allDecisions = new ArrayList<>();
-            
+
             long totalBuys = allDecisions.stream().filter(d -> "BUY".equals(d.getAction())).count();
             long totalSells = allDecisions.stream().filter(d -> "SELL".equals(d.getAction())).count();
             long totalHolds = allDecisions.stream().filter(d -> "HOLD".equals(d.getAction())).count();
-            
+
             double startCapital = INITIAL_CAPITAL;
             double finalCapital = session.getCurrentCapital() != null ? session.getCurrentCapital() : INITIAL_CAPITAL;
             double totalProfitLoss = finalCapital - startCapital;
-            
+
+            List<Map<String, Object>> stockSummaries = new ArrayList<>();
+            Map<Integer, List<ExperimentDecision>> decisionsByStock = new LinkedHashMap<>();
+            for (ExperimentDecision decision : allDecisions) {
+                decisionsByStock
+                    .computeIfAbsent(decision.getStockIndex(), k -> new ArrayList<>())
+                    .add(decision);
+            }
+
+            double runningCapital = INITIAL_CAPITAL;
+            double totalReturnPercent = 0.0;
+
+            for (List<ExperimentDecision> stockDecisions : decisionsByStock.values()) {
+                if (stockDecisions == null || stockDecisions.isEmpty()) {
+                    continue;
+                }
+
+                double initialCapital = runningCapital;
+                double stockCapital = runningCapital;
+                int shares = 0;
+
+                int buyCount = 0;
+                int sellCount = 0;
+                int holdCount = 0;
+
+                for (ExperimentDecision decision : stockDecisions) {
+                    String action = decision.getAction() != null ? decision.getAction() : "HOLD";
+                    int quantity = decision.getQuantity() != null ? decision.getQuantity() : 0;
+                    double price = decision.getPrice() != null ? decision.getPrice() : 0.0;
+
+                    switch (action) {
+                        case "BUY":
+                            stockCapital -= price * quantity;
+                            shares += quantity;
+                            buyCount++;
+                            break;
+                        case "SELL":
+                            stockCapital += price * quantity;
+                            shares -= quantity;
+                            sellCount++;
+                            break;
+                        default:
+                            holdCount++;
+                            break;
+                    }
+                }
+
+                double finalPrice = stockDecisions.get(stockDecisions.size() - 1).getPrice() != null
+                    ? stockDecisions.get(stockDecisions.size() - 1).getPrice()
+                    : 0.0;
+                if (shares > 0) {
+                    stockCapital += shares * finalPrice;
+                }
+
+                double returnAmount = stockCapital - initialCapital;
+                double returnPercent = initialCapital == 0 ? 0.0 : (returnAmount / initialCapital) * 100.0;
+                totalReturnPercent += returnPercent;
+
+                Map<String, Object> stockSummary = new HashMap<>();
+                stockSummary.put("initialCapital", initialCapital);
+                stockSummary.put("finalCapital", stockCapital);
+                stockSummary.put("returnAmount", returnAmount);
+                stockSummary.put("returnPercent", returnPercent);
+                stockSummary.put("buyCount", buyCount);
+                stockSummary.put("sellCount", sellCount);
+                stockSummary.put("holdCount", holdCount);
+                stockSummary.put("empty", false);
+                stockSummaries.add(stockSummary);
+
+                runningCapital = stockCapital;
+            }
+
+            double averageReturn = stockSummaries.isEmpty() ? 0.0 : totalReturnPercent / stockSummaries.size();
+
             summary.put("totalDecisions", allDecisions.size());
             summary.put("totalBuys", totalBuys);
             summary.put("totalSells", totalSells);
@@ -213,14 +299,14 @@ public class ExperimentService {
             summary.put("startCapital", startCapital);
             summary.put("finalCapital", finalCapital);
             summary.put("totalProfitLoss", totalProfitLoss);
-            summary.put("stocksTraded", session.getCurrentStockIndex() != null ? session.getCurrentStockIndex() : 0);
-            summary.put("session", session);
-            
+            summary.put("stocksTraded", stockSummaries.size());
+            summary.put("averageReturn", averageReturn);
+            summary.put("stockSummaries", stockSummaries);
+
         } catch (Exception e) {
             System.err.println("ERROR in getSessionSummary: " + e.getMessage());
-            summary.put("session", session);
         }
-        
+
         return summary;
     }
 }
