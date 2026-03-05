@@ -1,34 +1,21 @@
 services:
   - type: web
     name: nycad-stock-trading
-    env: java
+    runtime: java
     region: oregon
     plan: free
     buildCommand: mvn clean install -DskipTests
     startCommand: java -jar target/stock-trading-app-0.0.1-SNAPSHOT.jar
     envVars:
-      - key: PORT
-        value: 8080
       - key: SPRING_PROFILE
         value: prod
-      - key: JAVA_OPTS
-        value: -Xmx512m
       - key: DATABASE_URL
         fromDatabase:
           name: stock-trading-db
           property: connectionString
-      - key: DB_USERNAME
-        fromDatabase:
-          name: stock-trading-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: stock-trading-db
-          property: password
-
+    
 databases:
   - name: stock-trading-db
     databaseName: stocktrading
     region: oregon
     plan: free
-    ipAllowList: []
