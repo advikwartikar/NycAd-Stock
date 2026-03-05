@@ -9,10 +9,26 @@ services:
     envVars:
       - key: SPRING_PROFILE
         value: prod
-      - key: DATABASE_URL
+      - key: DATABASE_HOST
         fromDatabase:
           name: stock-trading-db
-          property: connectionString
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: stock-trading-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: stock-trading-db
+          property: database
+      - key: DATABASE_USER
+        fromDatabase:
+          name: stock-trading-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: stock-trading-db
+          property: password
     
 databases:
   - name: stock-trading-db
