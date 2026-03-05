@@ -2,9 +2,13 @@ package com.stocktrading.controller;
 
 import com.stocktrading.model.User;
 import com.stocktrading.model.ExperimentSession;
+import com.stocktrading.model.ExperimentDecision;
+import com.stocktrading.model.ExperimentStock;
 import com.stocktrading.model.MarketTrend;
 import com.stocktrading.dto.TrendMetricsDTO;
 import com.stocktrading.repository.ExperimentSessionRepository;
+import com.stocktrading.repository.ExperimentStockRepository;
+import com.stocktrading.repository.ExperimentDecisionRepository;
 import com.stocktrading.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 @Controller
 @RequestMapping("/admin")
@@ -24,6 +29,8 @@ public class AdminController {
 
     @Autowired private UserService userService;
     @Autowired private ExperimentSessionRepository sessionRepository;
+    @Autowired private ExperimentStockRepository experimentStockRepository;
+    @Autowired private ExperimentDecisionRepository decisionRepository;
     @Autowired private ExperimentService experimentService;
     @Autowired private MetricsCalculator metricsCalculator;
 
@@ -42,6 +49,18 @@ public class AdminController {
         model.addAttribute("completedExps", completedSessions.size());
         model.addAttribute("recentSessions", completedSessions.stream().limit(10).toList());
         return "admin/dashboard";
+    }
+
+
+    @GetMapping("/experiments")
+    public String experiments(Model model, Authentication auth) {
+        User admin = getAdmin(auth);
+        List<ExperimentSession> sessions = sessionRepository.findByCompletedTrue();
+
+        model.addAttribute("admin", admin);
+        model.addAttribute("sessions", sessions);
+        model.addAttribute("totalStocks", ExperimentService.TOTAL_STOCKS);
+        return "admin/experiments";
     }
 
     @GetMapping("/users")
@@ -151,79 +170,159 @@ public class AdminController {
     public ResponseEntity<byte[]> exportEnhancedData() {
         try {
             StringBuilder csv = new StringBuilder();
-            
-            // Enhanced CSV header with trend metrics
-            csv.append("Username,Full Name,Email,Total Stocks,Final Capital,Total P/L,");
-            csv.append("Bullish Sharpe,Bullish MaxDD,Bullish Volatility,Bullish WinRate,Bullish Trades,Bullish ProfitFactor,Bullish TimeInMarket,");
-            csv.append("Bearish Sharpe,Bearish MaxDD,Bearish Volatility,Bearish WinRate,Bearish Trades,Bearish ProfitFactor,Bearish TimeInMarket,");
-            csv.append("Sideways Sharpe,Sideways MaxDD,Sideways Volatility,Sideways WinRate,Sideways Trades,Sideways ProfitFactor,Sideways TimeInMarket,");
+
+            csv.append("Username,Full Name,Email,Stock Number,Stock Symbol,Market Trend,Start Capital,End Capital,Return %,Buy Count,Sell Count,Total Trades,");
+            csv.append("Trend Sharpe,Trend MaxDD,Trend Volatility,Trend WinRate,Trend Trades,Trend ProfitFactor,Trend TimeInMarket,");
             csv.append("Completed,Start Time,End Time\n");
-            
+
             List<User> allUsers = userService.getAllUsers();
-            
+            List<ExperimentStock> stocks = experimentStockRepository.findAllByOrderBySequenceOrderAsc();
+
             for (User user : allUsers) {
                 if ("ADMIN".equals(user.getRole())) continue;
-                
+
                 ExperimentSession session = experimentService.getAnySession(user);
-                
+
                 if (session == null) {
-                    csv.append(String.format("%s,%s,%s,0,100000,0,", 
-                        user.getUsername(), user.getFullName(), user.getEmail()));
-                    csv.append("0,0,0,0,0,0,0,");
-                    csv.append("0,0,0,0,0,0,0,");
-                    csv.append("0,0,0,0,0,0,0,");
-                    csv.append("No,N/A,N/A\n");
+                    csv.append(String.format(Locale.US,
+                        "%s,%s,%s,0,N/A,N/A,100000.00,100000.00,0.00,0,0,0,0.00,0.00,0.00,0.00,0,0.00,0.00,No,N/A,N/A\n",
+                        csvField(user.getUsername()), csvField(user.getFullName()), csvField(user.getEmail())));
                     continue;
                 }
-                
+
                 Map<MarketTrend, TrendMetricsDTO> trendMetrics = metricsCalculator.calculateTrendMetrics(session);
-                
-                TrendMetricsDTO bullish = trendMetrics.get(MarketTrend.BULLISH);
-                TrendMetricsDTO bearish = trendMetrics.get(MarketTrend.BEARISH);
-                TrendMetricsDTO sideways = trendMetrics.get(MarketTrend.SIDEWAYS);
-                
-                double finalCapital = session.getCurrentCapital() != null ? session.getCurrentCapital() : 100000.0;
-                double totalPL = finalCapital - 100000.0;
-                
-                csv.append(String.format("%s,%s,%s,%d,%.2f,%.2f,",
-                    user.getUsername(), user.getFullName(), user.getEmail(),
-                    session.getCurrentStockIndex(), finalCapital, totalPL));
-                
-                csv.append(String.format("%.2f,%.2f,%.2f,%.2f,%d,%.2f,%.2f,",
-                    bullish.getSharpeRatio(), bullish.getMaxDrawdown(), bullish.getVolatility(),
-                    bullish.getWinRate(), bullish.getNumberOfTrades(), bullish.getProfitFactor(),
-                    bullish.getAvgTimeInMarket()));
-                
-                csv.append(String.format("%.2f,%.2f,%.2f,%.2f,%d,%.2f,%.2f,",
-                    bearish.getSharpeRatio(), bearish.getMaxDrawdown(), bearish.getVolatility(),
-                    bearish.getWinRate(), bearish.getNumberOfTrades(), bearish.getProfitFactor(),
-                    bearish.getAvgTimeInMarket()));
-                
-                csv.append(String.format("%.2f,%.2f,%.2f,%.2f,%d,%.2f,%.2f,",
-                    sideways.getSharpeRatio(), sideways.getMaxDrawdown(), sideways.getVolatility(),
-                    sideways.getWinRate(), sideways.getNumberOfTrades(), sideways.getProfitFactor(),
-                    sideways.getAvgTimeInMarket()));
-                
-                csv.append(String.format("%s,%s,%s\n",
-                    session.getCompleted() ? "Yes" : "No",
-                    session.getStartTime() != null ? session.getStartTime().toString() : "N/A",
-                    session.getEndTime() != null ? session.getEndTime().toString() : "N/A"));
+                List<ExperimentDecision> allDecisions = decisionRepository.findBySessionOrderByStockIndexAscDayNumberAsc(session);
+                Map<Integer, List<ExperimentDecision>> decisionsByStock = allDecisions.stream()
+                    .collect(java.util.stream.Collectors.groupingBy(ExperimentDecision::getStockIndex));
+
+                double runningCapital = ExperimentService.INITIAL_CAPITAL;
+
+                for (ExperimentStock stock : stocks) {
+                    List<ExperimentDecision> stockDecisions = decisionsByStock
+                        .getOrDefault(stock.getSequenceOrder(), java.util.Collections.emptyList());
+
+                    StockRow stockRow = calculateStockRow(stockDecisions, runningCapital);
+                    runningCapital = stockRow.endCapital;
+
+                    long buyCount = stockDecisions.stream().filter(d -> "BUY".equalsIgnoreCase(d.getAction())).count();
+                    long sellCount = stockDecisions.stream().filter(d -> "SELL".equalsIgnoreCase(d.getAction())).count();
+
+                    MarketTrend trend = trendFromString(stock.getMarketTrend());
+                    TrendMetricsDTO trendData = trendMetrics.getOrDefault(trend, new TrendMetricsDTO());
+
+                    csv.append(String.format(Locale.US,
+                        "%s,%s,%s,%d,%s,%s,%.2f,%.2f,%.2f,%d,%d,%d,%.2f,%.2f,%.2f,%.2f,%d,%.2f,%.2f,%s,%s,%s\n",
+                        csvField(user.getUsername()),
+                        csvField(user.getFullName()),
+                        csvField(user.getEmail()),
+                        stock.getSequenceOrder() + 1,
+                        csvField(stock.getStockSymbol()),
+                        csvField(stock.getMarketTrend()),
+                        stockRow.startCapital,
+                        stockRow.endCapital,
+                        stockRow.returnPercent,
+                        (int) buyCount,
+                        (int) sellCount,
+                        (int) (buyCount + sellCount),
+                        trendData.getSharpeRatio(),
+                        trendData.getMaxDrawdown(),
+                        trendData.getVolatility(),
+                        trendData.getWinRate(),
+                        trendData.getNumberOfTrades(),
+                        trendData.getProfitFactor(),
+                        trendData.getAvgTimeInMarket(),
+                        session.getCompleted() ? "Yes" : "No",
+                        session.getStartTime() != null ? session.getStartTime().toString() : "N/A",
+                        session.getEndTime() != null ? session.getEndTime().toString() : "N/A"
+                    ));
+                }
             }
-            
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType("text/csv"));
-            String filename = "experiment_results_enhanced_" + 
+            String filename = "experiment_results_enhanced_" +
                 java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv";
             headers.setContentDispositionFormData("attachment", filename);
-            
+
             return ResponseEntity.ok()
                 .headers(headers)
                 .body(csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
-                
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
+    }
+
+    private StockRow calculateStockRow(List<ExperimentDecision> stockDecisions, double startCapital) {
+        StockRow row = new StockRow();
+        row.startCapital = startCapital;
+        row.endCapital = startCapital;
+        row.returnPercent = 0.0;
+
+        if (stockDecisions == null || stockDecisions.isEmpty()) {
+            return row;
+        }
+
+        List<ExperimentDecision> sorted = stockDecisions.stream()
+            .sorted(java.util.Comparator.comparing(ExperimentDecision::getDayNumber))
+            .toList();
+
+        double cash = startCapital;
+        int shares = 0;
+        double lastPrice = sorted.get(0).getPrice() != null ? sorted.get(0).getPrice() : 0.0;
+
+        for (ExperimentDecision decision : sorted) {
+            String action = decision.getAction() != null ? decision.getAction().toUpperCase() : "HOLD";
+            int qty = decision.getQuantity() != null ? decision.getQuantity() : 0;
+            double price = decision.getPrice() != null ? decision.getPrice() : 0.0;
+            lastPrice = price;
+
+            if ("BUY".equals(action) && qty > 0) {
+                cash -= (price * qty);
+                shares += qty;
+            } else if ("SELL".equals(action) && qty > 0) {
+                int sellQty = Math.min(qty, shares);
+                cash += (price * sellQty);
+                shares -= sellQty;
+            }
+        }
+
+        if (shares > 0) {
+            cash += shares * lastPrice;
+        }
+
+        row.endCapital = cash;
+        if (startCapital != 0) {
+            row.returnPercent = ((cash - startCapital) / startCapital) * 100.0;
+        }
+
+        return row;
+    }
+
+    private MarketTrend trendFromString(String marketTrend) {
+        if (marketTrend == null) {
+            return MarketTrend.SIDEWAYS;
+        }
+        for (MarketTrend trend : MarketTrend.values()) {
+            if (trend.name().equalsIgnoreCase(marketTrend) || trend.getDisplayName().equalsIgnoreCase(marketTrend)) {
+                return trend;
+            }
+        }
+        return MarketTrend.SIDEWAYS;
+    }
+
+    private String csvField(String value) {
+        if (value == null) {
+            return "";
+        }
+        return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+
+    private static class StockRow {
+        double startCapital;
+        double endCapital;
+        double returnPercent;
     }
 
     private User getAdmin(Authentication auth) {

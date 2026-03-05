@@ -50,13 +50,14 @@ function filter(){
 
     <table th:unless="${#lists.isEmpty(sessions)}">
       <thead><tr>
-        <th>#</th><th>User</th><th>Username</th><th>Started</th><th>Completed</th><th>Duration</th><th>Actions</th>
+        <th>#</th><th>User</th><th>Username</th><th>Stocks Traded</th><th>Started</th><th>Completed</th><th>Duration</th><th>Actions</th>
       </tr></thead>
       <tbody>
         <tr th:each="s,i : ${sessions}">
           <td th:text="${i.count}"></td>
           <td th:text="${s.user.fullName}"></td>
           <td th:text="${s.user.username}"></td>
+          <td th:text="|${s.currentStockIndex}/${totalStocks}|"></td>
           <td th:text="${s.startTime != null ? #temporals.format(s.startTime,'dd MMM yyyy HH:mm') : '—'}"></td>
           <td th:text="${s.endTime   != null ? #temporals.format(s.endTime,  'dd MMM yyyy HH:mm') : '—'}"></td>
           <td>—</td>

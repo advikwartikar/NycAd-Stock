@@ -31,7 +31,7 @@ public class DashboardController {
 
         // USER: Check experiment status
         long stockCount = experimentStockRepository.count();
-        model.addAttribute("experimentReady", stockCount >= 10);
+        model.addAttribute("experimentReady", stockCount >= ExperimentService.TOTAL_STOCKS);
         model.addAttribute("stockCount", stockCount);
 
         ExperimentSession activeSession = experimentService.getCurrentSession(user);

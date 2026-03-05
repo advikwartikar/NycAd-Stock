@@ -27,9 +27,9 @@ public class ExperimentController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         long stockCount = experimentStockRepository.count();
-        if (stockCount < 10) {
+        if (stockCount < ExperimentService.TOTAL_STOCKS) {
             ra.addFlashAttribute("error",
-                "Experiment setup incomplete – only " + stockCount + " stocks configured. " +
+                "Experiment setup incomplete – only " + stockCount + " stocks configured (need " + ExperimentService.TOTAL_STOCKS + "). " +
                 "Please wait a moment and try again, or contact the administrator.");
             return "redirect:/dashboard";
         }

@@ -68,19 +68,19 @@
     <div th:if="${info}"    class="alert alert-info"  th:text="${info}"></div>
 
     <div class="info-grid">
-      <div class="info-item"><div class="icon2">🎯</div><div class="lbl">Total Decisions</div><div class="val">100</div></div>
-      <div class="info-item"><div class="icon2">📊</div><div class="lbl">Stocks to Trade</div><div class="val">10</div></div>
+      <div class="info-item"><div class="icon2">🎯</div><div class="lbl">Total Decisions</div><div class="val">150</div></div>
+      <div class="info-item"><div class="icon2">📊</div><div class="lbl">Stocks to Trade</div><div class="val">15</div></div>
       <div class="info-item"><div class="icon2">⏱️</div><div class="lbl">Time Limit</div><div class="val">2 hrs</div></div>
     </div>
 
     <div class="instructions">
       <h4>How It Works</h4>
       <ul>
-        <li><strong>10 Stocks, 10 Days each</strong> — 100 total trading decisions</li>
+        <li><strong>15 Stocks, 10 Days each</strong> — 150 total trading decisions</li>
         <li><strong>Three actions:</strong> BUY (10 shares), SELL (10 shares), or HOLD</li>
         <li><strong>Fresh ₹1,00,000</strong> capital at the start of each stock</li>
         <li><strong>Historical data revealed day by day</strong> — you cannot see the future</li>
-        <li><strong>2-hour time limit</strong> — complete all 100 decisions within this time</li>
+        <li><strong>2-hour time limit</strong> — complete all 150 decisions within this time</li>
         <li><strong>You can exit early</strong> — your progress is always saved</li>
       </ul>
     </div>
@@ -93,7 +93,7 @@
     <!-- Still loading -->
     <div class="loading" th:unless="${experimentReady}">
       <div class="spinner"></div>
-      <span>Setting up experiment stocks (<span th:text="${stockCount}">0</span>/10)… Please wait, refreshing automatically…</span>
+      <span>Setting up experiment stocks (<span th:text="${stockCount}">0</span>/15)… Please wait, refreshing automatically…</span>
     </div>
   </div>
 
