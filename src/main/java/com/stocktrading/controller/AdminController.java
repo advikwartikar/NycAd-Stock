@@ -37,6 +37,11 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
         User admin = getAdmin(auth);
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
         List<User> regularUsers = userService.getAllUsers().stream()
                 .filter(u -> "USER".equals(u.getRole()))
                 .toList();
@@ -44,12 +49,56 @@ public class AdminController {
         List<ExperimentSession> completedSessions = sessionRepository.findByCompletedTrue().stream()
                 .filter(s -> s != null && s.getUser() != null)
                 .toList();
+=======
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+
+        List<User> regularUsers = new java.util.ArrayList<>();
+        long activeUsers = 0;
+        for (User user : userService.getAllUsers()) {
+            if (user != null && "USER".equals(user.getRole())) {
+                regularUsers.add(user);
+                if (Boolean.TRUE.equals(user.getActive())) {
+                    activeUsers++;
+                }
+            }
+        }
+
+        List<ExperimentSession> completedSessions = new java.util.ArrayList<>();
+        for (ExperimentSession session : sessionRepository.findByCompletedTrue()) {
+            if (session != null && session.getUser() != null) {
+                completedSessions.add(session);
+            }
+        }
+
+        List<ExperimentSession> recentSessions = completedSessions.size() > 10
+                ? completedSessions.subList(0, 10)
+                : completedSessions;
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
 
         model.addAttribute("admin", admin);
         model.addAttribute("totalUsers", regularUsers.size());
-        model.addAttribute("activeUsers", regularUsers.stream().filter(User::getActive).count());
+        model.addAttribute("activeUsers", activeUsers);
         model.addAttribute("completedExps", completedSessions.size());
-        model.addAttribute("recentSessions", completedSessions.stream().limit(10).toList());
+        model.addAttribute("recentSessions", recentSessions);
         return "admin/dashboard";
     }
 
@@ -58,11 +107,45 @@ public class AdminController {
     public String experiments(Model model, Authentication auth) {
         User admin = getAdmin(auth);
 <<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
         List<ExperimentSession> sessions = sessionRepository.findByCompletedTrue();
 =======
         List<ExperimentSession> sessions = sessionRepository.findByCompletedTrue().stream()
                 .filter(s -> s != null && s.getUser() != null)
                 .toList();
+>>>>>>> theirs
+=======
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+
+        List<ExperimentSession> sessions = new java.util.ArrayList<>();
+        for (ExperimentSession session : sessionRepository.findByCompletedTrue()) {
+            if (session != null && session.getUser() != null) {
+                sessions.add(session);
+            }
+        }
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+<<<<<<< ours
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
+>>>>>>> theirs
+=======
 >>>>>>> theirs
 
         model.addAttribute("admin", admin);
@@ -74,10 +157,14 @@ public class AdminController {
     @GetMapping("/users")
     public String listUsers(Model model, Authentication auth) {
         User admin = getAdmin(auth);
-        List<User> regularUsers = userService.getAllUsers().stream()
-                .filter(u -> "USER".equals(u.getRole()))
-                .toList();
-        
+
+        List<User> regularUsers = new java.util.ArrayList<>();
+        for (User user : userService.getAllUsers()) {
+            if (user != null && "USER".equals(user.getRole())) {
+                regularUsers.add(user);
+            }
+        }
+
         model.addAttribute("admin", admin);
         model.addAttribute("users", regularUsers);
         return "admin/users";
