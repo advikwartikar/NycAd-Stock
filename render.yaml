@@ -1,37 +1,23 @@
+$content = @"
 services:
   - type: web
     name: nycad-stock-trading
-    runtime: java
+    runtime: docker
     region: oregon
     plan: free
-    buildCommand: mvn clean install -DskipTests
-    startCommand: java -jar target/stock-trading-app-0.0.1-SNAPSHOT.jar
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
       - key: SPRING_PROFILE
         value: prod
-      - key: DATABASE_HOST
+      - key: DATABASE_URL
         fromDatabase:
           name: stock-trading-db
-          property: host
-      - key: DATABASE_PORT
-        fromDatabase:
-          name: stock-trading-db
-          property: port
-      - key: DATABASE_NAME
-        fromDatabase:
-          name: stock-trading-db
-          property: database
-      - key: DATABASE_USER
-        fromDatabase:
-          name: stock-trading-db
-          property: user
-      - key: DATABASE_PASSWORD
-        fromDatabase:
-          name: stock-trading-db
-          property: password
-    
+          property: connectionString
+
 databases:
   - name: stock-trading-db
     databaseName: stocktrading
     region: oregon
     plan: free
+"@
