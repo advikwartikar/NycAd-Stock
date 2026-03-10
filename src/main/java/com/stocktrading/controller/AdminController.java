@@ -1,4 +1,4 @@
-package main.java.com.stocktrading.controller;
+package com.stocktrading.controller;
 
 import com.stocktrading.model.User;
 import com.stocktrading.model.ExperimentSession;
