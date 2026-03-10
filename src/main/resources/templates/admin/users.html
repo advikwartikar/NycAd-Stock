@@ -104,7 +104,8 @@ function confirmDelete(username) {
               
               <form method="post" th:action="@{/admin/user/{id}/toggle-status(id=${user.id})}" style="display: inline;">
                 <button type="submit" class="btn btn-toggle" 
-                        th:onclick="'return confirmToggle(\'' + ${user.username} + '\', ' + ${user.active} + ');'">
+                        th:data-username="${user.username}" th:data-active="${user.active}"
+                        onclick="return confirmToggle(this.dataset.username, this.dataset.active === 'true');">
                   <span th:text="${user.active} ? 'Deactivate' : 'Activate'">Toggle</span>
                 </button>
               </form>
