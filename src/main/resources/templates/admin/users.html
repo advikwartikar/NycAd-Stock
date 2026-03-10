@@ -97,7 +97,7 @@ function confirmDelete(username) {
             <span th:if="${user.active}" class="badge badge-active">Active</span>
             <span th:unless="${user.active}" class="badge badge-inactive">Inactive</span>
           </td>
-          <td>₹<span th:text="${#numbers.formatDecimal(user.credits, 1, 0)}">100000</span></td>
+          <td>₹<span th:text="${user.credits != null ? #numbers.formatDecimal(user.credits, 1, 0) : '0'}">100000</span></td>
           <td>
             <div class="btns">
               <a th:href="@{/admin/user/{id}(id=${user.id})}" class="btn btn-view">View</a>

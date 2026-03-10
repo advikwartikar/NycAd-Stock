@@ -63,7 +63,8 @@ public class AdminController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         model.addAttribute("admin", admin);
-        model.addAttribute("user", user);
+        model.addAttribute("viewUser", user);
+        model.addAttribute("completedSessions", List.of());
         return "admin/user-detail";
     }
 
@@ -116,7 +117,7 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/user/{id}/toggle")
+    @PostMapping("/user/{id}/toggle-status")
     public String toggleUserStatus(@PathVariable Long id, RedirectAttributes ra) {
         try {
             userService.toggleUserStatus(id);
@@ -226,7 +227,9 @@ public class AdminController {
     }
 
     private User getAdmin(Authentication auth) {
-        return userService.getUserByUsername(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        if (auth == null || auth.getName() == null) {
+            return null;
+        }
+        return userService.getUserByUsername(auth.getName()).orElse(null);
     }
 }
