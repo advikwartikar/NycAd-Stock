@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,9 +20,14 @@ import java.util.List;
 @Order(1)
 public class DataLoader implements CommandLineRunner {
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private StockRepository stockRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private StockRepository stockRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
@@ -31,7 +37,7 @@ public class DataLoader implements CommandLineRunner {
 
         // Create Admin User
         createUser("admin1", "admin123", "Admin User", "admin@stocktrading.com", "ADMIN", 0.0);
-        System.out.println("✓ Created admin user: admin1");
+        System.out.println("Created admin user: admin1");
 
         // Create Real Users
         createUser("pranav", "pranav123", "Pranav Boke", "pranav.boke@gmail.com", "USER", 100000.0);
@@ -40,14 +46,32 @@ public class DataLoader implements CommandLineRunner {
         createUser("unnat", "unnat123", "Unnat Chandak", "chandakunnat@gmail.com", "USER", 100000.0);
         createUser("nikhil", "nikhil123", "Nikhil Biyani", "nikhhilbiyani24@gmail.com", "USER", 100000.0);
         createUser("mayur", "mayur123", "Mayur Chaudhari", "chaudharimayur6881@gmail.com", "USER", 100000.0);
+        createUser("ashish", "ashish123", "Ashish Deshpande", "ashish.deshpande@stocktrading.local", "USER", 100000.0);
+        createUser("rajesh", "rajesh123", "Rajesh T S", "rajesh.ts@stocktrading.local", "USER", 100000.0);
+        createUser("nisha", "nisha123", "Nisha Lobo", "nisha.lobo@stocktrading.local", "USER", 100000.0);
+        createUser("kinjal", "kinjal123", "Kinjal R Jetly", "kinjal.jetly@stocktrading.local", "USER", 100000.0);
+        createUser("rohan", "rohan123", "Rohan Kaaat", "rohan.kaaat@stocktrading.local", "USER", 100000.0);
+        createUser("vedashree", "vedashree123", "Vedashree Shisode", "vedashree.shisode@stocktrading.local", "USER", 100000.0);
+        createUser("vedant", "vedant123", "Vedant Naatu", "vedant.naatu@stocktrading.local", "USER", 100000.0);
+        createUser("kunal", "kunal123", "Kunal Kiwalkar", "kunal.kiwalkar@stocktrading.local", "USER", 100000.0);
+        createUser("dummy", "dummy123", "Test Dummy User", "dummy.user@stocktrading.local", "USER", 100000.0);
 
-        System.out.println("✓ Created 6 real users:");
+        System.out.println("Created 15 real users:");
         System.out.println("  Pranav Boke (pranav/pranav123)");
         System.out.println("  ISHAN ZALPURI (ishan/ishan123)");
         System.out.println("  Sairaj Manoj Kasat (sairaj/sairaj123)");
         System.out.println("  Unnat Chandak (unnat/unnat123)");
         System.out.println("  Nikhil Biyani (nikhil/nikhil123)");
         System.out.println("  Mayur Chaudhari (mayur/mayur123)");
+        System.out.println("  Ashish Deshpande (ashish/ashish123)");
+        System.out.println("  Rajesh T S (rajesh/rajesh123)");
+        System.out.println("  Nisha Lobo (nisha/nisha123)");
+        System.out.println("  Kinjal R Jetly (kinjal/kinjal123)");
+        System.out.println("  Rohan Kaaat (rohan/rohan123)");
+        System.out.println("  Vedashree Shisode (vedashree/vedashree123)");
+        System.out.println("  Vedant Naatu (vedant/vedant123)");
+        System.out.println("  Kunal Kiwalkar (kunal/kunal123)");
+        System.out.println("  Test Dummy User (dummy/dummy123)");
 
         // Load Stocks
         loadStocks();
@@ -71,24 +95,24 @@ public class DataLoader implements CommandLineRunner {
 
     private void loadStocks() {
         if (stockRepository.count() > 0) {
-            System.out.println("✓ Stocks already loaded: " + stockRepository.count());
+            System.out.println("Stocks already loaded: " + stockRepository.count());
             return;
         }
 
         List<Stock> stocks = new ArrayList<>();
-        
+
         for (int i = 1; i <= 110; i++) {
             String csvPath = "data/stock_" + i + ".csv";
             InputStream is = getClass().getClassLoader().getResourceAsStream(csvPath);
-            
+
             if (is != null) {
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
                     br.readLine();
                     String firstLine = br.readLine();
-                    
+
                     if (firstLine != null) {
                         String[] values = firstLine.split(",");
-                        
+
                         Stock stock = new Stock();
                         stock.setSymbol("STOCK_" + i);
                         stock.setName("Stock " + i);
@@ -98,7 +122,7 @@ public class DataLoader implements CommandLineRunner {
                         stock.setVolume(Long.parseLong(values[4].split("\\.")[0]));
                         stock.setChangePercent(0.0);
                         stock.setActive(true);
-                        
+
                         stocks.add(stock);
                     }
                 } catch (Exception e) {
@@ -106,8 +130,8 @@ public class DataLoader implements CommandLineRunner {
                 }
             }
         }
-        
+
         stockRepository.saveAll(stocks);
-        System.out.println("✓ Stocks loaded successfully: " + stocks.size());
+        System.out.println("Stocks loaded successfully: " + stocks.size());
     }
 }
