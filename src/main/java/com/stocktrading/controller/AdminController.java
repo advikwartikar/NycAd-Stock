@@ -46,13 +46,16 @@ public class AdminController {
 
     @GetMapping("/users")
     public String listUsers(Model model, Authentication auth) {
-        User admin = getAdmin(auth);
-        List<User> regularUsers = userService.getAllUsers().stream()
-                .filter(u -> "USER".equals(u.getRole()))
-                .toList();
-        
-        model.addAttribute("admin", admin);
-        model.addAttribute("users", regularUsers);
+        model.addAttribute("admin", getAdmin(auth));
+        try {
+            List<User> regularUsers = userService.getAllUsers().stream()
+                    .filter(u -> "USER".equals(u.getRole()))
+                    .toList();
+            model.addAttribute("users", regularUsers);
+        } catch (Exception e) {
+            model.addAttribute("users", List.of());
+            model.addAttribute("error", "Unable to load users: " + e.getMessage());
+        }
         return "admin/users";
     }
 

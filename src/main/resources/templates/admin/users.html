@@ -112,7 +112,8 @@ function confirmDelete(username) {
               
               <form method="post" th:action="@{/admin/user/{id}/delete(id=${user.id})}" style="display: inline;">
                 <button type="submit" class="btn btn-delete" 
-                        th:onclick="'return confirmDelete(\'' + ${user.username} + '\');'">
+                        th:data-username="${user.username}"
+                        onclick="return confirmDelete(this.dataset.username);">
                   Delete
                 </button>
               </form>
