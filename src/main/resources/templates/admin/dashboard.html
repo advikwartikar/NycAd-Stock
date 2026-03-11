@@ -54,7 +54,7 @@ th { background: #f9fafb; color: #6b7280; font-weight: 600; text-transform: uppe
 <div class="container">
   <div class="header">
     <h2>Admin Dashboard</h2>
-    <p>Welcome, <strong th:text="${admin.fullName}">Admin</strong> — here's an overview of the platform.</p>
+    <p>Welcome, <strong th:text="${admin != null ? admin.fullName : 'Admin'}">Admin</strong> — here's an overview of the platform.</p>
   </div>
 
   <div class="stats">
@@ -106,9 +106,9 @@ th { background: #f9fafb; color: #6b7280; font-weight: 600; text-transform: uppe
       </thead>
       <tbody>
         <tr th:each="session : ${recentSessions}">
-          <td><strong th:text="${session.user.username}">user1</strong></td>
-          <td th:text="${#temporals.format(session.endTime, 'MMM dd, yyyy HH:mm')}">Feb 18, 2026 10:30</td>
-          <td th:text="${session.currentStockIndex * 10}">150</td>
+          <td><strong th:text="${session.user != null ? session.user.username : 'Unknown'}">user1</strong></td>
+          <td th:text="${session.endTime != null ? #temporals.format(session.endTime, 'MMM dd, yyyy HH:mm') : 'N/A'}">Feb 18, 2026 10:30</td>
+          <td th:text="${(session.currentStockIndex != null ? session.currentStockIndex : 0) * 10}">150</td>
           <td><span class="badge badge-done">Completed</span></td>
         </tr>
       </tbody>

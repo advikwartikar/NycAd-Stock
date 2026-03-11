@@ -29,18 +29,24 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
-        User admin = getAdmin(auth);
-        List<User> regularUsers = userService.getAllUsers().stream()
-                .filter(u -> "USER".equals(u.getRole()))
-                .toList();
-        
-        List<ExperimentSession> completedSessions = sessionRepository.findByCompletedTrue();
+        model.addAttribute("admin", getAdmin(auth));
+        try {
+            List<User> regularUsers = userService.getAllUsers().stream()
+                    .filter(u -> "USER".equals(u.getRole()))
+                    .toList();
+            List<ExperimentSession> completedSessions = sessionRepository.findByCompletedTrue();
 
-        model.addAttribute("admin", admin);
-        model.addAttribute("totalUsers", regularUsers.size());
-        model.addAttribute("activeUsers", regularUsers.stream().filter(User::getActive).count());
-        model.addAttribute("completedExps", completedSessions.size());
-        model.addAttribute("recentSessions", completedSessions.stream().limit(10).toList());
+            model.addAttribute("totalUsers", regularUsers.size());
+            model.addAttribute("activeUsers", regularUsers.stream().filter(User::getActive).count());
+            model.addAttribute("completedExps", completedSessions.size());
+            model.addAttribute("recentSessions", completedSessions.stream().limit(10).toList());
+        } catch (Exception e) {
+            model.addAttribute("totalUsers", 0);
+            model.addAttribute("activeUsers", 0);
+            model.addAttribute("completedExps", 0);
+            model.addAttribute("recentSessions", List.of());
+            model.addAttribute("error", "Unable to load dashboard stats: " + e.getMessage());
+        }
         return "admin/dashboard";
     }
 
@@ -61,13 +67,20 @@ public class AdminController {
 
     @GetMapping("/user/{id}")
     public String userDetail(@PathVariable Long id, Model model, Authentication auth) {
-        User admin = getAdmin(auth);
-        User user = userService.getUserById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        model.addAttribute("admin", admin);
-        model.addAttribute("viewUser", user);
-        model.addAttribute("completedSessions", List.of());
+        model.addAttribute("admin", getAdmin(auth));
+        try {
+            User user = userService.getUserById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            List<ExperimentSession> completedSessions = sessionRepository.findByUser(user).stream()
+                    .filter(s -> Boolean.TRUE.equals(s.getCompleted()))
+                    .toList();
+
+            model.addAttribute("viewUser", user);
+            model.addAttribute("completedSessions", completedSessions);
+        } catch (Exception e) {
+            model.addAttribute("error", "Unable to load user details: " + e.getMessage());
+            return "redirect:/admin/users";
+        }
         return "admin/user-detail";
     }
 

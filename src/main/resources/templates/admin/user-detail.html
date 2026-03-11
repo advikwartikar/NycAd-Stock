@@ -70,11 +70,11 @@ th { background: #f9fafb; color: #6b7280; font-weight: 600; text-transform: uppe
       </div>
       <div class="info-item">
         <div class="info-label">Credits</div>
-        <div class="info-value">₹<span th:text="${#numbers.formatDecimal(viewUser.credits, 1, 0)}">100000</span></div>
+        <div class="info-value">₹<span th:text="${viewUser.credits != null ? #numbers.formatDecimal(viewUser.credits, 1, 0) : '0'}">100000</span></div>
       </div>
       <div class="info-item">
         <div class="info-label">Joined</div>
-        <div class="info-value" th:text="${#temporals.format(viewUser.createdAt, 'MMM dd, yyyy')}">Feb 18, 2026</div>
+        <div class="info-value" th:text="${viewUser.createdAt != null ? #temporals.format(viewUser.createdAt, 'MMM dd, yyyy') : 'N/A'}">Feb 18, 2026</div>
       </div>
     </div>
   </div>
@@ -95,9 +95,9 @@ th { background: #f9fafb; color: #6b7280; font-weight: 600; text-transform: uppe
       <tbody>
         <tr th:each="session : ${completedSessions}">
           <td><strong>#<span th:text="${session.id}">1</span></strong></td>
-          <td th:text="${#temporals.format(session.startTime, 'MMM dd, HH:mm')}">Feb 18, 10:00</td>
-          <td th:text="${#temporals.format(session.endTime, 'MMM dd, HH:mm')}">Feb 18, 12:00</td>
-          <td><span th:text="${session.currentStockIndex}">10</span> / 10</td>
+          <td th:text="${session.startTime != null ? #temporals.format(session.startTime, 'MMM dd, HH:mm') : 'N/A'}">Feb 18, 10:00</td>
+          <td th:text="${session.endTime != null ? #temporals.format(session.endTime, 'MMM dd, HH:mm') : 'N/A'}">Feb 18, 12:00</td>
+          <td><span th:text="${session.currentStockIndex != null ? session.currentStockIndex : 0}">10</span> / 15</td>
           <td><span class="badge badge-done">Completed</span></td>
         </tr>
       </tbody>
