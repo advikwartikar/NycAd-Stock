@@ -71,7 +71,7 @@
             <h1>📊 Stock Trading Experiment</h1>
         </div>
         <div class="topbar-right">
-            <span>Stock <strong th:text="${state.stockIndex + 1}">1</strong> of 10</span>
+            <span>Stock <strong th:text="${state.stockIndex + 1}">1</strong> of <span th:text="${state.totalStocks}">15</span></span>
             <span>Day <strong th:text="${state.dayNumber + 1}">1</strong> of 10</span>
             <div class="timer" th:classappend="${state.timeRemainingMinutes < 30} ? 'warning' : ''">
                 ⏱ <span th:text="${state.timeRemainingMinutes}">120</span> min left

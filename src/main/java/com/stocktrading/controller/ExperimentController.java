@@ -107,8 +107,8 @@ public class ExperimentController {
             return "redirect:/experiment/summary";
         }
 
-        boolean isLastDay   = session.getCurrentDay() == 9;
-        boolean isLastStock = session.getCurrentStockIndex() == 9;
+        boolean isLastDay = session.getCurrentDay() == (ExperimentService.DAYS_PER_STOCK - 1);
+        boolean isLastStock = session.getCurrentStockIndex() == (ExperimentService.TOTAL_STOCKS - 1);
 
         try {
             ExperimentStock currentStock = experimentService.getCurrentStock(session);
