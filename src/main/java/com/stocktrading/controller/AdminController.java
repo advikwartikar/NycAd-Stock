@@ -4,6 +4,7 @@ import com.stocktrading.model.User;
 import com.stocktrading.model.ExperimentSession;
 import com.stocktrading.model.MarketTrend;
 import com.stocktrading.dto.TrendMetricsDTO;
+import com.stocktrading.repository.ExperimentDecisionRepository;
 import com.stocktrading.repository.ExperimentSessionRepository;
 import com.stocktrading.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 
 @Controller
 @RequestMapping("/admin")
@@ -24,6 +26,7 @@ public class AdminController {
 
     @Autowired private UserService userService;
     @Autowired private ExperimentSessionRepository sessionRepository;
+    @Autowired private ExperimentDecisionRepository decisionRepository;
     @Autowired private ExperimentService experimentService;
     @Autowired private MetricsCalculator metricsCalculator;
 
@@ -180,7 +183,7 @@ public class AdminController {
             for (User user : allUsers) {
                 if ("ADMIN".equals(user.getRole())) continue;
                 
-                ExperimentSession session = experimentService.getAnySession(user);
+                ExperimentSession session = getBestSessionForExport(user);
                 
                 if (session == null) {
                     csv.append(String.format("%s,%s,%s,0,100000,0,", 
@@ -240,6 +243,20 @@ public class AdminController {
             e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
+    }
+
+    private ExperimentSession getBestSessionForExport(User user) {
+        List<ExperimentSession> sessions = sessionRepository.findByUser(user);
+        if (sessions.isEmpty()) {
+            return null;
+        }
+
+        return sessions.stream()
+                .max(Comparator
+                        .comparingLong((ExperimentSession s) -> decisionRepository.countBySession(s))
+                        .thenComparing((ExperimentSession s) -> Boolean.TRUE.equals(s.getCompleted()))
+                        .thenComparing(ExperimentSession::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
+                .orElse(null);
     }
 
     private User getAdmin(Authentication auth) {
