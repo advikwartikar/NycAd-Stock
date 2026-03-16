@@ -2,6 +2,7 @@ package com.stocktrading.controller;
 
 import com.stocktrading.model.User;
 import com.stocktrading.model.ExperimentSession;
+import com.stocktrading.model.ExperimentDecision;
 import com.stocktrading.model.MarketTrend;
 import com.stocktrading.dto.TrendMetricsDTO;
 import com.stocktrading.repository.ExperimentDecisionRepository;
@@ -172,7 +173,7 @@ public class AdminController {
         try {
             StringBuilder csv = new StringBuilder();
             
-            csv.append("Username,Full Name,Email,Total Stocks,Final Capital,Total P/L,");
+            csv.append("Username,Full Name,Email,Total Stocks,Total Decisions,Final Capital,Total P/L,");
             csv.append("Bullish Sharpe,Bullish MaxDD,Bullish Volatility,Bullish WinRate,Bullish Trades,Bullish ProfitFactor,Bullish TimeInMarket,");
             csv.append("Bearish Sharpe,Bearish MaxDD,Bearish Volatility,Bearish WinRate,Bearish Trades,Bearish ProfitFactor,Bearish TimeInMarket,");
             csv.append("Sideways Sharpe,Sideways MaxDD,Sideways Volatility,Sideways WinRate,Sideways Trades,Sideways ProfitFactor,Sideways TimeInMarket,");
@@ -186,7 +187,7 @@ public class AdminController {
                 ExperimentSession session = getBestSessionForExport(user);
                 
                 if (session == null) {
-                    csv.append(String.format("%s,%s,%s,0,100000,0,", 
+                    csv.append(String.format("%s,%s,%s,0,0,100000,0,", 
                         user.getUsername(), user.getFullName(), user.getEmail()));
                     csv.append("0,0,0,0,0,0,0,");
                     csv.append("0,0,0,0,0,0,0,");
@@ -194,6 +195,14 @@ public class AdminController {
                     csv.append("No,N/A,N/A\n");
                     continue;
                 }
+
+                List<ExperimentDecision> sessionDecisions = decisionRepository.findBySession(session);
+                long totalDecisions = sessionDecisions.size();
+                long stocksTraded = sessionDecisions.stream()
+                        .map(ExperimentDecision::getStockIndex)
+                        .filter(java.util.Objects::nonNull)
+                        .distinct()
+                        .count();
                 
                 Map<MarketTrend, TrendMetricsDTO> trendMetrics = metricsCalculator.calculateTrendMetrics(session);
                 
@@ -204,9 +213,9 @@ public class AdminController {
                 double finalCapital = session.getCurrentCapital() != null ? session.getCurrentCapital() : 100000.0;
                 double totalPL = finalCapital - 100000.0;
                 
-                csv.append(String.format("%s,%s,%s,%d,%.2f,%.2f,",
+                csv.append(String.format("%s,%s,%s,%d,%d,%.2f,%.2f,",
                     user.getUsername(), user.getFullName(), user.getEmail(),
-                    session.getCurrentStockIndex(), finalCapital, totalPL));
+                    stocksTraded, totalDecisions, finalCapital, totalPL));
                 
                 csv.append(String.format("%.2f,%.2f,%.2f,%.2f,%d,%.2f,%.2f,",
                     bullish.getSharpeRatio(), bullish.getMaxDrawdown(), bullish.getVolatility(),
