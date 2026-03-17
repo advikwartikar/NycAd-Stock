@@ -184,25 +184,25 @@ public class AdminController {
             for (User user : allUsers) {
                 if ("ADMIN".equals(user.getRole())) continue;
                 
+                List<ExperimentDecision> allUserDecisions = decisionRepository.findBySession_User(user);
+                long totalDecisions = allUserDecisions.size();
+                long stocksTraded = allUserDecisions.stream()
+                        .map(ExperimentDecision::getStockIndex)
+                        .filter(java.util.Objects::nonNull)
+                        .distinct()
+                        .count();
+
                 ExperimentSession session = getBestSessionForExport(user);
                 
                 if (session == null) {
-                    csv.append(String.format("%s,%s,%s,0,0,100000,0,", 
-                        user.getUsername(), user.getFullName(), user.getEmail()));
+                    csv.append(String.format("%s,%s,%s,%d,%d,100000,0,", 
+                        user.getUsername(), user.getFullName(), user.getEmail(), stocksTraded, totalDecisions));
                     csv.append("0,0,0,0,0,0,0,");
                     csv.append("0,0,0,0,0,0,0,");
                     csv.append("0,0,0,0,0,0,0,");
                     csv.append("No,N/A,N/A\n");
                     continue;
                 }
-
-                List<ExperimentDecision> sessionDecisions = decisionRepository.findBySession(session);
-                long totalDecisions = sessionDecisions.size();
-                long stocksTraded = sessionDecisions.stream()
-                        .map(ExperimentDecision::getStockIndex)
-                        .filter(java.util.Objects::nonNull)
-                        .distinct()
-                        .count();
                 
                 Map<MarketTrend, TrendMetricsDTO> trendMetrics = metricsCalculator.calculateTrendMetrics(session);
                 

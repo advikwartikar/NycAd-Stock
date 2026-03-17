@@ -2,6 +2,7 @@ package com.stocktrading.repository;
 
 import com.stocktrading.model.ExperimentDecision;
 import com.stocktrading.model.ExperimentSession;
+import com.stocktrading.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -25,4 +26,8 @@ public interface ExperimentDecisionRepository extends JpaRepository<ExperimentDe
     
     // Count decisions for a session
     long countBySession(ExperimentSession session);
+
+    // Fetch/count decisions across all sessions of a user
+    List<ExperimentDecision> findBySession_User(User user);
+    long countBySession_User(User user);
 }
