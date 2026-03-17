@@ -274,8 +274,43 @@ public class AdminController {
                         .comparing((ExperimentSession s) -> Boolean.TRUE.equals(s.getCompleted()))
                         .thenComparingInt(s -> s.getCurrentStockIndex() == null ? 0 : s.getCurrentStockIndex())
                         .thenComparingLong((ExperimentSession s) -> decisionRepository.countBySessionId(s.getId()))
-                        .thenComparing(ExperimentSession::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
+                .thenComparing(ExperimentSession::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
                 .orElse(null);
+    }
+
+    @GetMapping("/export-debug")
+    @ResponseBody
+    public String exportDebug() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("DEBUG EXPORT\n\n");
+
+        List<User> allUsers = userService.getAllUsers();
+        sb.append("Total users: ").append(allUsers.size()).append("\n\n");
+
+        for (User user : allUsers) {
+            if ("ADMIN".equals(user.getRole())) {
+                continue;
+            }
+
+            sb.append("User: ").append(user.getUsername()).append("\n");
+
+            ExperimentSession bestSession = getBestSessionForExport(user);
+            if (bestSession == null) {
+                sb.append("  No session\n");
+            } else {
+                long decisions = decisionRepository.countBySessionId(bestSession.getId());
+                sb.append("  Session ID: ").append(bestSession.getId()).append("\n");
+                sb.append("  Completed: ").append(bestSession.getCompleted()).append("\n");
+                sb.append("  Stock Index: ").append(bestSession.getCurrentStockIndex()).append("\n");
+                sb.append("  Capital: ").append(bestSession.getCurrentCapital()).append("\n");
+                sb.append("  Decisions: ").append(decisions).append("\n");
+                sb.append("  Start: ").append(bestSession.getStartTime()).append("\n");
+                sb.append("  End: ").append(bestSession.getEndTime()).append("\n");
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 
     private User getAdmin(Authentication auth) {
