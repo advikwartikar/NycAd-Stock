@@ -91,6 +91,10 @@
         <div th:if="${param.logout}" class="error" style="background: #e8f5e9; color: #2e7d32;">
             You have been logged out
         </div>
+
+        <div th:if="${param.switched}" class="error" style="background: #e8f5e9; color: #2e7d32;">
+            Previous session cleared. Please sign in.
+        </div>
         
         <form th:action="@{/login}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
