@@ -52,6 +52,8 @@ th { background: #f9fafb; color: #6b7280; font-weight: 600; text-transform: uppe
 </div>
 
 <div class="container">
+  <div th:if="${error}" style="padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;" th:text="${error}"></div>
+
   <div class="header">
     <h2>Admin Dashboard</h2>
     <p>Welcome, <strong th:text="${admin != null ? admin.fullName : 'Admin'}">Admin</strong> — here's an overview of the platform.</p>
