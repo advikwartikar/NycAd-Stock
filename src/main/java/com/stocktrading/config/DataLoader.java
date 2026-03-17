@@ -103,7 +103,19 @@ public class DataLoader implements CommandLineRunner {
         admin.setActive(true);
         admin.setCredits(0.0);
 
-        if (admin.getPassword() == null || !passwordEncoder.matches(rawPassword, admin.getPassword())) {
+        boolean resetPassword = false;
+        if (admin.getPassword() == null) {
+            resetPassword = true;
+        } else {
+            try {
+                resetPassword = !passwordEncoder.matches(rawPassword, admin.getPassword());
+            } catch (Exception ignored) {
+                // Handles legacy/plaintext/non-bcrypt values safely by resetting.
+                resetPassword = true;
+            }
+        }
+
+        if (resetPassword) {
             admin.setPassword(passwordEncoder.encode(rawPassword));
         }
 
