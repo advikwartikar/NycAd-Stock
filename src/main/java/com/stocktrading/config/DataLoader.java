@@ -35,9 +35,10 @@ public class DataLoader implements CommandLineRunner {
         System.out.println("LOADING INITIAL DATA");
         System.out.println("========================================");
 
-        // Create Admin User
-        createUser("admin1", "admin123", "Admin User", "admin@stocktrading.com", "ADMIN", 0.0);
-        System.out.println("Created admin user: admin1");
+        // Ensure admin users always exist and can log in
+        ensureAdminUser("admin1", "admin123", "Admin User", "admin@stocktrading.com");
+        ensureAdminUser("admin", "admin123", "Admin User", "admin2@stocktrading.com");
+        System.out.println("Ensured admin users: admin1/admin123 and admin/admin123");
 
         // Create Real Users
         createUser("pranav", "pranav123", "Pranav Boke", "pranav.boke@gmail.com", "USER", 100000.0);
@@ -91,6 +92,22 @@ public class DataLoader implements CommandLineRunner {
             user.setActive(true);
             userRepository.save(user);
         }
+    }
+
+    private void ensureAdminUser(String username, String rawPassword, String fullName, String email) {
+        User admin = userRepository.findByUsername(username).orElseGet(User::new);
+        admin.setUsername(username);
+        admin.setFullName(fullName);
+        admin.setEmail(email);
+        admin.setRole("ADMIN");
+        admin.setActive(true);
+        admin.setCredits(0.0);
+
+        if (admin.getPassword() == null || !passwordEncoder.matches(rawPassword, admin.getPassword())) {
+            admin.setPassword(passwordEncoder.encode(rawPassword));
+        }
+
+        userRepository.save(admin);
     }
 
     private void loadStocks() {
