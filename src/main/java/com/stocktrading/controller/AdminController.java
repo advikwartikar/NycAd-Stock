@@ -285,9 +285,4 @@ public class AdminController {
         return userService.getUserByUsername(auth.getName()).orElse(null);
     }
 
-    @ExceptionHandler(Exception.class)
-    public String handleAdminException(Exception e, RedirectAttributes ra) {
-        ra.addFlashAttribute("error", "Admin error: " + e.getMessage());
-        return "redirect:/admin/dashboard";
-    }
 }
