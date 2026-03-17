@@ -93,11 +93,11 @@ th { background: #f9fafb; color: #6b7280; font-weight: 600; text-transform: uppe
         </tr>
       </thead>
       <tbody>
-        <tr th:each="session : ${completedSessions}">
-          <td><strong>#<span th:text="${session.id}">1</span></strong></td>
-          <td th:text="${session.startTime != null ? #temporals.format(session.startTime, 'MMM dd, HH:mm') : 'N/A'}">Feb 18, 10:00</td>
-          <td th:text="${session.endTime != null ? #temporals.format(session.endTime, 'MMM dd, HH:mm') : 'N/A'}">Feb 18, 12:00</td>
-          <td><span th:text="${session.currentStockIndex != null ? session.currentStockIndex : 0}">10</span> / 15</td>
+        <tr th:each="expSession : ${completedSessions}">
+          <td><strong>#<span th:text="${expSession.id}">1</span></strong></td>
+          <td th:text="${expSession.startTime != null ? #temporals.format(expSession.startTime, 'MMM dd, HH:mm') : 'N/A'}">Feb 18, 10:00</td>
+          <td th:text="${expSession.endTime != null ? #temporals.format(expSession.endTime, 'MMM dd, HH:mm') : 'N/A'}">Feb 18, 12:00</td>
+          <td><span th:text="${expSession.currentStockIndex != null ? expSession.currentStockIndex : 0}">10</span> / 15</td>
           <td><span class="badge badge-done">Completed</span></td>
         </tr>
       </tbody>
