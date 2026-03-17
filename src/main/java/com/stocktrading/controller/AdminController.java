@@ -184,7 +184,7 @@ public class AdminController {
             for (User user : allUsers) {
                 if ("ADMIN".equals(user.getRole())) continue;
                 
-                List<ExperimentDecision> allUserDecisions = decisionRepository.findBySession_User(user);
+                List<ExperimentDecision> allUserDecisions = decisionRepository.findAllByUserId(user.getId());
                 long totalDecisions = allUserDecisions.size();
                 long stocksTraded = allUserDecisions.stream()
                         .map(ExperimentDecision::getStockIndex)
@@ -264,7 +264,7 @@ public class AdminController {
                 .max(Comparator
                         .comparing((ExperimentSession s) -> Boolean.TRUE.equals(s.getCompleted()))
                         .thenComparingInt(s -> s.getCurrentStockIndex() == null ? 0 : s.getCurrentStockIndex())
-                        .thenComparingLong((ExperimentSession s) -> decisionRepository.countBySession(s))
+                        .thenComparingLong((ExperimentSession s) -> decisionRepository.countBySessionId(s.getId()))
                         .thenComparing(ExperimentSession::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
                 .orElse(null);
     }

@@ -4,6 +4,8 @@ import com.stocktrading.model.ExperimentDecision;
 import com.stocktrading.model.ExperimentSession;
 import com.stocktrading.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -30,4 +32,10 @@ public interface ExperimentDecisionRepository extends JpaRepository<ExperimentDe
     // Fetch/count decisions across all sessions of a user
     List<ExperimentDecision> findBySession_User(User user);
     long countBySession_User(User user);
+
+    @Query("SELECT d FROM ExperimentDecision d WHERE d.session.user.id = :userId")
+    List<ExperimentDecision> findAllByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(d) FROM ExperimentDecision d WHERE d.session.id = :sessionId")
+    long countBySessionId(@Param("sessionId") Long sessionId);
 }
