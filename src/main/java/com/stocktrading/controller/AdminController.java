@@ -262,8 +262,9 @@ public class AdminController {
 
         return sessions.stream()
                 .max(Comparator
-                        .comparingLong((ExperimentSession s) -> decisionRepository.countBySession(s))
-                        .thenComparing((ExperimentSession s) -> Boolean.TRUE.equals(s.getCompleted()))
+                        .comparing((ExperimentSession s) -> Boolean.TRUE.equals(s.getCompleted()))
+                        .thenComparingInt(s -> s.getCurrentStockIndex() == null ? 0 : s.getCurrentStockIndex())
+                        .thenComparingLong((ExperimentSession s) -> decisionRepository.countBySession(s))
                         .thenComparing(ExperimentSession::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
                 .orElse(null);
     }
