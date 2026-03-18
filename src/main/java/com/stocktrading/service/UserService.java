@@ -87,17 +87,19 @@ public class UserService {
     // ===============================
 
     public User updateUser(Long id,
-                           String username,
                            String fullName,
                            String email,
+                           String password,
                            Double credits) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setUsername(username);
         user.setFullName(fullName);
         user.setEmail(email);
+        if (password != null && !password.isBlank()) {
+            user.setPassword(passwordEncoder.encode(password));
+        }
 
         if (credits != null) {
             user.setCredits(credits);

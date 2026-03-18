@@ -183,7 +183,7 @@ public class AdminController {
             
             for (User user : allUsers) {
                 try {
-                    if ("ADMIN".equals(user.getRole())) continue;
+                    if (isAdminRole(user)) continue;
 
                     List<ExperimentDecision> allUserDecisions = decisionRepository.findAllByUserId(user.getId());
                     long totalDecisions = allUserDecisions.size();
@@ -205,11 +205,17 @@ public class AdminController {
                         continue;
                     }
 
-                    Map<MarketTrend, TrendMetricsDTO> trendMetrics = metricsCalculator.calculateTrendMetrics(session);
-
-                    TrendMetricsDTO bullish = trendMetrics.getOrDefault(MarketTrend.BULLISH, new TrendMetricsDTO());
-                    TrendMetricsDTO bearish = trendMetrics.getOrDefault(MarketTrend.BEARISH, new TrendMetricsDTO());
-                    TrendMetricsDTO sideways = trendMetrics.getOrDefault(MarketTrend.SIDEWAYS, new TrendMetricsDTO());
+                    TrendMetricsDTO bullish = new TrendMetricsDTO();
+                    TrendMetricsDTO bearish = new TrendMetricsDTO();
+                    TrendMetricsDTO sideways = new TrendMetricsDTO();
+                    try {
+                        Map<MarketTrend, TrendMetricsDTO> trendMetrics = metricsCalculator.calculateTrendMetrics(session);
+                        bullish = trendMetrics.getOrDefault(MarketTrend.BULLISH, new TrendMetricsDTO());
+                        bearish = trendMetrics.getOrDefault(MarketTrend.BEARISH, new TrendMetricsDTO());
+                        sideways = trendMetrics.getOrDefault(MarketTrend.SIDEWAYS, new TrendMetricsDTO());
+                    } catch (Exception ignored) {
+                        // Keep user/session totals in CSV even if trend metrics fail for this row.
+                    }
 
                     double finalCapital = session.getCurrentCapital() != null ? session.getCurrentCapital() : 100000.0;
                     double totalPL = finalCapital - 100000.0;
@@ -238,12 +244,35 @@ public class AdminController {
                             session.getStartTime() != null ? session.getStartTime().toString() : "N/A",
                             session.getEndTime() != null ? session.getEndTime().toString() : "N/A"));
                 } catch (Exception userEx) {
-                    csv.append(String.format("%s,%s,%s,0,0,100000,0,",
-                            user.getUsername(), user.getFullName(), user.getEmail()));
+                    long totalDecisions = 0;
+                    long stocksTraded = 0;
+                    ExperimentSession bestSession = null;
+                    try {
+                        List<ExperimentDecision> allUserDecisions = decisionRepository.findAllByUserId(user.getId());
+                        totalDecisions = allUserDecisions.size();
+                        stocksTraded = allUserDecisions.stream()
+                                .map(ExperimentDecision::getStockIndex)
+                                .filter(java.util.Objects::nonNull)
+                                .distinct()
+                                .count();
+                        bestSession = getBestSessionForExport(user);
+                    } catch (Exception ignored) {
+                    }
+
+                    double finalCapital = bestSession != null && bestSession.getCurrentCapital() != null
+                            ? bestSession.getCurrentCapital() : 100000.0;
+                    double totalPL = finalCapital - 100000.0;
+                    String completed = bestSession != null && Boolean.TRUE.equals(bestSession.getCompleted()) ? "Yes" : "No";
+                    String start = bestSession != null && bestSession.getStartTime() != null ? bestSession.getStartTime().toString() : "N/A";
+                    String end = bestSession != null && bestSession.getEndTime() != null ? bestSession.getEndTime().toString() : "N/A";
+
+                    csv.append(String.format("%s,%s,%s,%d,%d,%.2f,%.2f,",
+                            user.getUsername(), user.getFullName(), user.getEmail(),
+                            stocksTraded, totalDecisions, finalCapital, totalPL));
                     csv.append("0,0,0,0,0,0,0,");
                     csv.append("0,0,0,0,0,0,0,");
                     csv.append("0,0,0,0,0,0,0,");
-                    csv.append("No,ERROR,ERROR\n");
+                    csv.append(String.format("%s,%s,%s\n", completed, start, end));
                 }
             }
             
@@ -276,6 +305,14 @@ public class AdminController {
                         .thenComparingLong((ExperimentSession s) -> decisionRepository.countBySessionId(s.getId()))
                 .thenComparing(ExperimentSession::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
                 .orElse(null);
+    }
+
+    private boolean isAdminRole(User user) {
+        if (user == null || user.getRole() == null) {
+            return false;
+        }
+        String role = user.getRole().trim().toUpperCase();
+        return "ADMIN".equals(role) || "ROLE_ADMIN".equals(role);
     }
 
     @GetMapping("/export-debug")
