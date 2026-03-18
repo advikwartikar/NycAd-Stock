@@ -17,6 +17,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.Comparator;
@@ -30,6 +32,7 @@ public class AdminController {
     @Autowired private ExperimentDecisionRepository decisionRepository;
     @Autowired private ExperimentService experimentService;
     @Autowired private MetricsCalculator metricsCalculator;
+    @Autowired private DataSource dataSource;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -320,6 +323,14 @@ public class AdminController {
     public String exportDebug() {
         StringBuilder sb = new StringBuilder();
         sb.append("DEBUG EXPORT\n\n");
+        try (Connection con = dataSource.getConnection()) {
+            sb.append("DB URL: ").append(con.getMetaData().getURL()).append("\n");
+            sb.append("DB Product: ").append(con.getMetaData().getDatabaseProductName()).append("\n");
+        } catch (Exception e) {
+            sb.append("DB INFO ERROR: ").append(e.getMessage()).append("\n");
+        }
+        sb.append("Total sessions in DB: ").append(sessionRepository.count()).append("\n");
+        sb.append("Total decisions in DB: ").append(decisionRepository.count()).append("\n\n");
 
         List<User> allUsers = userService.getAllUsers();
         sb.append("Total users: ").append(allUsers.size()).append("\n\n");
