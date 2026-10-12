@@ -37,7 +37,7 @@ Installation
 
 Clone the repository:
 
-git clone https://github.com/advikw artikar/NycAd-Stock.git
+git clone https://github.com/advikwartikar/NycAd-Stock.git
 cd NycAd-Stock
 
 Replace the clone URL above with the exact repository URL if your GitHub username or repository name differs.
