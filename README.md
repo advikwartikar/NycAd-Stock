@@ -1,112 +1,108 @@
-Stock Trading Simulation Application
+# Stock Trading Simulation
 
-A Java-based stock market trading simulator built with Spring Boot. The application lets users practise buying and selling stocks using virtual credits, monitor portfolio performance, and explore stock price charts without risking real money.
+A Java and Spring Boot web application for practising stock trading with virtual credits. Users can explore stock data, simulate buy/sell transactions, and review portfolio performance without using real money.
 
-Features
+> **Project status:** Educational project. Verify the current implementation and deployment configuration before relying on any feature described here.
 
-* User Management: Role-based access for regular users and administrators.
-* Virtual Trading: Trade using a virtual starting balance of 100,000 credits.
-* Stock Analysis: Load OHLCV stock data from CSV files and display technical indicators such as SMA and RSI.
-* Portfolio Management: Track holdings, available balance, and profit/loss.
-* Interactive Charts: Visualize stock price movements using candlestick and line charts.
-* Admin Dashboard: Monitor registered users, portfolios, and transactions.
-* Security: Spring Security-based authentication and authorization.
+## Features
 
-Features listed above should be enabled and tested in the current version of the application.
+- User authentication and role-based access with Spring Security
+- Virtual trading and portfolio tracking
+- CSV-based OHLCV stock data and technical indicators (where configured)
+- Stock charts built with Thymeleaf, JavaScript, and Chart.js
+- Administrative views for user and transaction monitoring (where implemented)
 
-Technology Stack
+## Technology stack
 
-Layer	Technologies
-Backend	Java 17, Spring Boot 3.2
-Security	Spring Security
-Persistence	Spring Data JPA, H2 / MySQL
-Frontend	Thymeleaf, HTML, CSS, JavaScript
-Charts	Chart.js
-Build Tool	Maven
-Data Input	CSV-based OHLCV data
+- Java 17
+- Spring Boot 3.2
+- Spring MVC, Spring Security, Spring Data JPA
+- Thymeleaf, HTML, CSS, JavaScript, Chart.js
+- Maven
+- PostgreSQL for configured deployments; H2 is included for local development
 
-Getting Started
+Check `pom.xml` and the active Spring profile for the exact database and dependency configuration used by your checkout.
 
-Prerequisites
+## Prerequisites
 
-* Java 17 or later
-* Maven 3.6 or later
-* MySQL 8.0 or later, if using MySQL instead of H2
+- JDK 17+
+- Maven 3.6+
+- A configured database if your selected profile does not use an embedded database
 
-Installation
+## Run locally
 
 Clone the repository:
 
+```bash
 git clone https://github.com/advikwartikar/NycAd-Stock.git
 cd NycAd-Stock
+```
 
-Replace the clone URL above with the exact repository URL if your GitHub username or repository name differs.
+Build and run the tests:
 
-Build the application:
+```bash
+mvn clean verify
+```
 
-mvn clean package
+Start the application:
 
-Run the application:
-
+```bash
 mvn spring-boot:run
+```
 
-Open http://localhost:8080 in your browser, provided the application is configured to use port 8080.
+Then open [http://localhost:8080](http://localhost:8080), assuming the active configuration uses port 8080.
 
-Database Configuration
+If the application requires database environment variables, configure them locally before starting it. Never commit real passwords, tokens, or production connection strings.
 
-The application can be configured to use H2 for local development or MySQL for persistent database storage.
+## Stock data
 
-For MySQL, create the database:
+The project supports CSV-based stock data. Confirm the expected headers and file locations against the current data-loading code before adding files. Example OHLCV columns are:
 
-CREATE DATABASE stocktrading;
+```csv
+Open,High,Low,Close,Volume
+100.0,102.5,99.5,101.0,50000
+```
 
-Configure the datasource URL, username, and password using your local application configuration or environment variables.
+Technical-indicator columns such as SMA or RSI should only be included when supported by the configured parser.
 
-Never commit database passwords, API keys, or other secrets to the repository.
+## Testing
 
-Stock Data Format
+Run the test suite with:
 
-Stock history can be loaded from CSV files containing OHLCV values and optional technical indicators.
-
-Example:
-
-Open,High,Low,Close,Volume,SMA,RSI
-100.0,102.5,99.5,101.0,50000,100.5,65.0
-
-The actual CSV headers and file naming conventions must match the application’s data-loading implementation.
-
-Application Modules
-
-* Model: Users, stocks, transactions, and portfolios.
-* Repository: Database persistence and queries.
-* Service: Trading operations and business logic.
-* Controller: Web routes and request handling.
-* Config: Security and application configuration.
-* DTO: Data transfer objects.
-* Templates: Thymeleaf views.
-* Static Resources: CSS, JavaScript, and other frontend assets.
-
-Testing
-
-Run the automated test suite:
-
+```bash
 mvn test
+```
 
-Important areas to test include authentication, authorization, transaction validation, available balance, stock purchases and sales, portfolio calculations, and persistence.
+The CI workflow runs Maven verification on pushes and pull requests. A green workflow means the configured build and tests passed in that run; it does not replace manual testing of the web application.
 
-Roadmap
+## Project structure
 
-* [ ]	Improve unit and integration test coverage.
-* [ ]	Strengthen validation and error handling.
-* [ ]	Improve portfolio analytics and chart interactions.
-* [ ]	Add CI checks using GitHub Actions.
-* [ ]	Document deployment and environment configuration.
-* [ ]	Add screenshots and a verified demonstration link.
+```text
+src/
+  main/
+    java/        Application code
+    resources/   Configuration, templates, static assets, and data
+  test/          Automated tests
+docs/            Project documentation index
+.github/
+  workflows/     Continuous integration
+```
 
-Disclaimer
+## Documentation
 
-This project is intended for educational purposes. It simulates stock trading and does not execute real financial transactions or provide investment advice.
+See [docs/README.md](docs/README.md) for the documentation index and guidance on keeping project notes organized.
 
-License
+## Security notes
 
-Educational/academic use. A formal open-source license can be added if the project is intended for public reuse.
+- Do not use demo credentials in a public or production deployment.
+- Store secrets in environment variables or your hosting provider's secret manager.
+- Keep database consoles and administrative endpoints protected.
+- Review authentication, authorization, CSRF protection, and input validation before deployment.
+
+## Disclaimer
+
+This is an educational trading simulator, not a brokerage platform. It does not execute real financial transactions and is not investment advice.
+
+## License
+
+No open-source license is currently specified. Unless a license is added, reuse and redistribution remain subject to the repository owner's rights.
