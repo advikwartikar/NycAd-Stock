@@ -1,26 +1,18 @@
-# Maven
+# Maven / Java
 target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-pom.xml.next
-release.properties
-dependency-reduced-pom.xml
+*.class
+*.jar
+*.war
+*.ear
 
-# Eclipse
+# IDEs
 .settings/
 .classpath
 .project
-
-# IntelliJ
 .idea/
 *.iml
 *.iws
-
-# NetBeans
 nb-configuration.xml
-
-# VS Code
 .vscode/
 
 # OS
@@ -30,15 +22,30 @@ Thumbs.db
 # Logs
 *.log
 
-# Build scripts (temporary)
-*.sh
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+application-local.properties
+application-prod.properties
+secrets/
+*.pem
+*.key
 
-# Keep CSV data files!
-!src/main/resources/data/*.csv
-
-### Database Files ###
+# Local databases and generated data
 /data/
 *.db
 *.mv.db
 *.trace.db
 backup_*.csv
+
+# Keep project stock-data CSVs when intentionally stored in resources
+!src/main/resources/data/*.csv
+
+# Maven generated metadata
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
